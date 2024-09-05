@@ -73,7 +73,7 @@
                 <Button Command="{Binding ModifyFileCommand}"  Style="{StaticResource btnMenu}" Content="Módosítás" Margin="0,168,0,502"/>
                 <Button Command="{Binding RemoveFileCommand}" Style="{StaticResource btnMenu}" Content="Törlés" Margin="0,246,0,424"/>
                 <Button Command="{Binding ProcessFileCommand}" Style="{StaticResource btnMenu}" Content="Feldolgoz" Margin="0,505,0,165"/>
-                <Button Command="{Binding ProcessAllFileCommmand}" Style="{StaticResource btnMenu}" Content="Összes feldolgozása" Margin="0,587,0,83"/>
+
                 <!-- Előlnézet -->
 
             </Grid>
@@ -108,9 +108,9 @@
 
                 <Label Style="{StaticResource lbListTitle}" Grid.Row="0" Content="Hozzáadott"/>
 
-                <Label Style="{StaticResource lbListTitle}" Grid.Column="2" Grid.Row="0" Content="Feldolgozás alatt"/>
+                <Label Style="{StaticResource lbListTitle}" Grid.Column="2" Grid.Row="0" Content="Feldolgozott"/>
 
-                <Label Style="{StaticResource lbListTitle}" Grid.Column="4" Grid.Row="0" Content="Befejezett"/>
+                <Label Style="{StaticResource lbListTitle}" Grid.Column="4" Grid.Row="0" Content="..."/>
 
                 <ListBox Grid.Row="1" ItemsSource="{Binding AddedFiles}" SelectedItem="{Binding SelectedItem}">
                     <ListBox.ItemTemplate>
@@ -147,6 +147,42 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
+                <ListBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding ProcessedFiles}" IsEnabled="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Black" BorderThickness="2">
+                                <StackPanel CanHorizontallyScroll="False">
+
+                                    <TextBlock>
+                                    <Run Text="Pdf fájl neve: " Style="{StaticResource runHeader}"/>
+                                        <LineBreak/>
+                                    <Run Text="{Binding PdfFileName}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                                    <Run Text="Pdf oldalszám: " Style="{StaticResource runHeader}"/>
+                                        <LineBreak/>
+                                    <Run Text="{Binding PdfPageNum}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                                    <Run Text="Txt fájl neve: " Style="{StaticResource runHeader}"/>
+                                        <LineBreak/>
+                                    <Run Text="{Binding TxtFileName}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                                    <Run Text="Mentés helye: " Style="{StaticResource runHeader}"/>
+                                        <LineBreak/>
+                                    <Run Text="{Binding OutPutDestination}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                
             </Grid>
         </Viewbox>
 

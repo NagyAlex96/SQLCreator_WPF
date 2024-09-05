@@ -90,7 +90,6 @@ namespace SQLCreator.Assets
         private FileModel FModelConverter(string[] files)
         {
             FileModel fModel = new FileModel();
-            fModel.ProgressionPercentage = 0; //feldolgozottság %-ban
             foreach (var item in files)
             {
                 if (IOPath.GetExtension(item) == ".txt")

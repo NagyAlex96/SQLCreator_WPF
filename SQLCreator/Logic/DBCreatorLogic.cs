@@ -1,13 +1,14 @@
 ﻿using SQLCreator.Assets;
 using SQLCreator.Interfaces;
-using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.Arm;
 
 namespace SQLCreator.Logic
 {
     public class DBCreatorLogic : IDbCreatorLogic
     {
         IDBCreator _dbCreator;
+        /// <summary>
+        /// A táblák rész a pdf hányadik sorától indul
+        /// </summary>
         private int _tableStartLineIndex;
         public IDBCreator DbCreator => this._dbCreator;
 
@@ -20,15 +21,38 @@ namespace SQLCreator.Logic
         {
             this._dbCreator.SetupTables(txtFileLines.Count);
 
-            for (int i = 0; i < txtFileLines.Count; i++)
+            //pdf sorai
+            string[] pdfLines = pdfDataOnPage.Select(x => x.Split('\n')).FirstOrDefault();
+            this._tableStartLineIndex = pdfLines
+                    .Select((line, index) => new { line, index })
+                    .Where(x => x.line.Contains("Táblák"))
+                    .Select(x => x.index)
+                    .FirstOrDefault(-1);
+
+            ITable[] tempTables = new ITable[txtFileLines.Count];
+            for (int i = 0; i < tempTables.Length; i++)
             {
-                ITable table = new Table(txtFileName.Split('\n')[i], txtFileLines[i][0].Split('\t').Length);
+                ITable table = new Table(txtFileName.Split('\n')[i], txtFileLines[i][0].Split('\t').Length); //mindegyik txt-hez tartozó mezőnek ugyanannyi sora lesz
                 IField[] fields = TxtDataProcessing(txtFileLines[i]);
                 AddFieldToTable(table, fields);
-                PdfDataProcessing(table, fields, pdfDataOnPage);
-
-                this._dbCreator.AddTable(table);
+                tempTables[i] = table;
             }
+
+            for (int i = 0; i < tempTables.Length; i++) //0-1, 1-2, 2-3, 3-4
+            {
+                
+                if(i==tempTables.Length-1)
+                {
+                    PdfDataProcessing(tempTables[i], null, tempTables[i].FieldData, pdfDataOnPage);
+                }
+                else
+                {
+                    PdfDataProcessing(tempTables[i], tempTables[i + 1], tempTables[i].FieldData, pdfDataOnPage);
+                }
+
+                this._dbCreator.AddTable(tempTables[i]);
+            }
+
             SetReferencesAndFkeys();
             ;
         }
@@ -53,7 +77,13 @@ namespace SQLCreator.Logic
             }
         }
 
-        private void PdfDataProcessing(in ITable table, IField[] fields, in string[] pdfDataOnPage)
+        /// <summary>
+        /// Egyéb kapcsolatok és adatok beállítása a pdf-ben található adatok alapján
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="fields"></param>
+        /// <param name="pdfDataOnPage">A pdf adott oldalán található sorok (adatok)</param>
+        private void PdfDataProcessing(in ITable table, in ITable? nextTable, IField[] fields, in string[] pdfDataOnPage)
         {
             foreach (var page in pdfDataOnPage)
             {
@@ -63,14 +93,7 @@ namespace SQLCreator.Logic
                     SetNameOfDb(lines);
                 }
 
-                int index = lines
-                    .Select((line, index) => new { line, index })
-                    .Where(x => x.line.Contains("Táblák"))
-                    .Select(x => x.index)
-                    .FirstOrDefault(-1);
-
-
-                SetPKAndTypeOfField(table, fields, lines, index);
+                SetPKAndTypeOfField(table, fields, lines, this._tableStartLineIndex);
 
                 ;
             }
@@ -96,14 +119,14 @@ namespace SQLCreator.Logic
             this._dbCreator.SetupNameOfDb(lines[i - 1].Substring(3));
         }
 
-        private void SetPKAndTypeOfField(in ITable table, IField[] fields, string[] lines, int index)
+        private void SetPKAndTypeOfField(in ITable table, IField[] fields, in string[] lines, int index)
         {
             int i = index;
 
 
             i = FindTableLineIndex(table.TableName, lines, i);
 
-            // Process fields if the table line was found
+            //Amennyiben megtaláltuk a tábla sorát a pdf-ben
             if (i >= 0)
             {
                 ProcessFields(fields, lines, i);
@@ -163,7 +186,7 @@ namespace SQLCreator.Logic
         private IField[] TxtDataProcessing(in string[] txtFileLines)
         {
             string[] fieldInfo = txtFileLines[0].Split('\t'); //kezdetben a 0-ik sorból kiszedjük a mezők neveit
-            IField[] fields = new IField[fieldInfo.Length];
+            IField[] fields = new IField[fieldInfo.Length]; //amennyi mezőnév található az első sorban, annyi mezőnk lesz
             SetFieldNames(fields, fieldInfo, txtFileLines.Length - 1);
 
             for (int i = 1; i < txtFileLines.Length; i++)
@@ -192,8 +215,8 @@ namespace SQLCreator.Logic
         /// Beállítjuk a mezőknek a nevét
         /// </summary>
         /// <param name="fields">Mezők</param>
-        /// <param name="fieldNamesFromTxt">Mezőknek a neve</param>
-        /// <param name="maxLine">Mezőhöz tartozó adatok maximális száma</param>
+        /// <param name="fieldNamesFromTxt">Mezőnevek</param>
+        /// <param name="maxLine">Mezők száma</param>
         private void SetFieldNames(IField[] fields, in string[] fieldNamesFromTxt, in int maxLine)
         {
             for (int i = 0; i < fields.Length; i++)

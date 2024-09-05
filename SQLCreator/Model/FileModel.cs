@@ -46,12 +46,5 @@ namespace SQLCreator.Model
             get { return _txtFileName; }
             set { SetProperty(ref _txtFileName, value); }
         }
-
-        private double _progressionPercentage;
-        public double ProgressionPercentage
-        {
-            get { return _progressionPercentage; }
-            set { SetProperty(ref _progressionPercentage, value); }
-        }
     }
 }

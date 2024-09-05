@@ -29,5 +29,10 @@ namespace SQLCreator.Interfaces
         /// <param name="item">Amit átmozgatunk</param>
         public void MoveFileFromTo(IList<FileModel> moveFrom, IList<FileModel> moveTo, FileModel item);
 
+        /// <summary>
+        /// Fájl feldolgozás
+        /// </summary>
+        /// <param name="fileModel">Kijelölt fájl</param>
+        public void ProcessFile(FileModel fileModel);
     }
 }

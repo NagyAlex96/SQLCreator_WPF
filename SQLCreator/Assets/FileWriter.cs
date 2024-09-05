@@ -113,13 +113,22 @@ namespace SQLCreator.Assets
 
                     for (int j = 0; j < tableInfo.FieldData.Length; j++)
                     {
-                        string s = (tableInfo.FieldData[j].TypeOfField == Field.DEFAULT_VALUE ?
-                            $"\"{tableInfo.FieldData[j].FieldValue[i]}\""
-                            : tableInfo.FieldData[j].FieldValue[i]);
+                        string s = "";
+                        if(tableInfo.FieldData[j].TypeOfField == Field.DEFAULT_VALUE)
+                        {
+                            if(tableInfo.FieldData[j].FieldValue[i] != "")
+                            {
+                                s += $"\"{tableInfo.FieldData[j].FieldValue[i]}\"";
+                            }
+                        }
+                        else
+                        {
+                            s += tableInfo.FieldData[j].FieldValue[i];
+                        }
 
                         if(s == "")
                         {
-                            s += $"\"\"";
+                            s += $"NULL";
                         }
 
                         if (j != tableInfo.FieldData.Length - 1)

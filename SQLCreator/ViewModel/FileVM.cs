@@ -12,7 +12,6 @@ namespace SQLCreator.ViewModel
         public FileVM()
         {
             AddedFiles = new ObservableCollection<FileModel>();
-            InProgressFiles = new ObservableCollection<FileModel>();
             ProcessedFiles = new ObservableCollection<FileModel>();
 
             AddFilesCommand = new RelayCommand(AddFiles);
@@ -46,7 +45,7 @@ namespace SQLCreator.ViewModel
         {
             //TODO: error
             _fileLogic.ProcessFile(SelectedItem);
-            _fileLogic.MoveFileFromTo(AddedFiles, InProgressFiles, SelectedItem);
+            _fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, SelectedItem);
         }
 
         public IRelayCommand ProcessAllFileCommmand { get; private set; }
@@ -56,7 +55,6 @@ namespace SQLCreator.ViewModel
         }
 
         public ObservableCollection<FileModel> AddedFiles { get; set; }
-        public ObservableCollection<FileModel> InProgressFiles { get; set; }
         public ObservableCollection<FileModel> ProcessedFiles { get; set; }
 
         private FileModel _selectedItem;

@@ -51,7 +51,6 @@ namespace SQLCreator.Logic
             this._fWriter.SQLWriter(fileModel.OutPutDestination);
         }
 
-
         public void MoveFileFromTo(IList<FileModel> moveFrom, IList<FileModel> moveTo, FileModel item)
         {
             moveTo.Add(item);
