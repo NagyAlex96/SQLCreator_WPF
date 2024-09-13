@@ -3,7 +3,6 @@ using System.Windows.Input;
 
 namespace SQLCreator
 {
-
     public partial class MainWindow : Window
     {
         public MainWindow()

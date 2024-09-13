@@ -1,5 +1,6 @@
 ﻿using SQLCreator.Assets;
 using SQLCreator.Interfaces;
+using System.Linq;
 
 namespace SQLCreator.Logic
 {
@@ -25,7 +26,7 @@ namespace SQLCreator.Logic
             string[] pdfLines = pdfDataOnPage.Select(x => x.Split('\n')).FirstOrDefault();
             this._tableStartLineIndex = pdfLines
                     .Select((line, index) => new { line, index })
-                    .Where(x => x.line.Contains("Táblák"))
+                    .Where(x => x.line.Contains("táblák:"))
                     .Select(x => x.index)
                     .FirstOrDefault(-1);
 
@@ -40,15 +41,10 @@ namespace SQLCreator.Logic
 
             for (int i = 0; i < tempTables.Length; i++) //0-1, 1-2, 2-3, 3-4
             {
-                
-                if(i==tempTables.Length-1)
-                {
-                    PdfDataProcessing(tempTables[i], null, tempTables[i].FieldData, pdfDataOnPage);
-                }
-                else
-                {
-                    PdfDataProcessing(tempTables[i], tempTables[i + 1], tempTables[i].FieldData, pdfDataOnPage);
-                }
+
+
+                PdfDataProcessing(tempTables[i], tempTables, tempTables[i].FieldData, pdfDataOnPage);
+
 
                 this._dbCreator.AddTable(tempTables[i]);
             }
@@ -61,11 +57,14 @@ namespace SQLCreator.Logic
         {
             foreach (ITable tableInfo in this._dbCreator.Tables)
             {
-                foreach (ITable otherTablesInfo in this._dbCreator.Tables.Where(x => x.TableName != tableInfo.TableName))
+                List<ITable> otherTables = this._dbCreator.Tables.ToList();
+                otherTables.Remove(tableInfo);
+
+                foreach (ITable otherTablesInfo in otherTables)
                 {
                     var selectedField = (from x in otherTablesInfo.FieldData
                                          from y in tableInfo.FieldData
-                                         where x.FieldName == y.FieldName && !y.IsPrimaryKey
+                                         where x.FieldName == y.FieldName && !(x.IsForeignKey || y.IsForeignKey)
                                          select y).FirstOrDefault();
 
                     if (selectedField != null)
@@ -83,7 +82,7 @@ namespace SQLCreator.Logic
         /// <param name="table"></param>
         /// <param name="fields"></param>
         /// <param name="pdfDataOnPage">A pdf adott oldalán található sorok (adatok)</param>
-        private void PdfDataProcessing(in ITable table, in ITable? nextTable, IField[] fields, in string[] pdfDataOnPage)
+        private void PdfDataProcessing(in ITable table, in ITable[] tables, IField[] fields, in string[] pdfDataOnPage)
         {
             foreach (var page in pdfDataOnPage)
             {
@@ -93,7 +92,7 @@ namespace SQLCreator.Logic
                     SetNameOfDb(lines);
                 }
 
-                SetPKAndTypeOfField(table, fields, lines, this._tableStartLineIndex);
+                SetPKAndTypeOfField(table, tables, fields, lines, this._tableStartLineIndex);
 
                 ;
             }
@@ -119,17 +118,18 @@ namespace SQLCreator.Logic
             this._dbCreator.SetupNameOfDb(lines[i - 1].Substring(3));
         }
 
-        private void SetPKAndTypeOfField(in ITable table, IField[] fields, in string[] lines, int index)
+        private void SetPKAndTypeOfField(in ITable table, in ITable[] tables, IField[] fields, in string[] lines, int index)
         {
-            int i = index;
+            int from = index;
 
 
-            i = FindTableLineIndex(table.TableName, lines, i);
+            from = FindTableLineIndex(table.TableName, lines, from);
+
 
             //Amennyiben megtaláltuk a tábla sorát a pdf-ben
-            if (i >= 0)
+            if (from >= 0)
             {
-                ProcessFields(fields, lines, i);
+                ProcessFields(fields, tables, lines, from);
             }
         }
 
@@ -158,24 +158,58 @@ namespace SQLCreator.Logic
         /// </summary>
         /// <param name="fields">Mezők</param>
         /// <param name="lines">Ahol az adatok vannak</param>
-        /// <param name="tableLineIndex">Melyik sortól kezdve nézzük</param>
-        private void ProcessFields(IField[] fields, in string[] lines, in int tableLineIndex)
+        /// <param name="fromTableIndex">Melyik sortól kezdve nézzük</param>
+        private void ProcessFields(IField[] fields, ITable[] tables, string[] lines, int fromTableIndex)
         {
-            for (int j = 0; j < fields.Length; j++)
+            //TODO
+            int toTableIndex = fromTableIndex + 1;
+            List<ITable> otherTables = tables.ToList();
+            var a = tables.Where(x => lines[fromTableIndex].Contains(x.TableName)).FirstOrDefault();
+            otherTables.Remove(a);
+
+            //megkeresi, hogy meddig tart a leírása az adott táblánál
+            while (toTableIndex < lines.Length && !otherTables.Any(table => lines[toTableIndex].Contains(table.TableName)))
             {
-                //amennyiben még nem lett beállítva semelyik mezőre sem az elsődleges kulcs
-                if (!fields.Any(x => x.IsPrimaryKey))
-                {
-                    bool isPrimaryKey = lines[tableLineIndex + j + 1].Contains("ez a kulcs");
-                    if (isPrimaryKey)
-                    {
-                        fields[j].SetupIsPrimaryKey(true);
-                    }
-                }
-                //minden esetben van a mezőnek alapértelmezett típusa
-                //TODO:
-                fields[j].SetupTypeOfField(lines[tableLineIndex + j + 1]);
+                toTableIndex++;
             }
+
+            int j = fromTableIndex + 1;
+            for (int i = 0; i < fields.Length; i++)
+            {
+                List<IField> otherFields = fields.ToList();
+                otherFields.Remove(fields[i]);
+                while (j < toTableIndex && !otherFields.Any(f => lines[j].SequenceEqual(f.FieldName)) && fields[i].TypeOfField == null)
+                {
+                    //amennyiben még nem lett beállítva semelyik mezőre sem az elsődleges kulcs
+                    if (!fields.Any(x => x.IsPrimaryKey))
+                    {
+                        bool isPrimaryKey = lines[j].Contains("ez a kulcs");
+                        if (isPrimaryKey)
+                        {
+                            fields[i].SetupIsPrimaryKey(true);
+                        }
+                    }
+                    //minden esetben van a mezőnek alapértelmezett típusa
+                    fields[i].SetupTypeOfField(lines[j]);
+                    j++;
+                }
+            }
+
+            //for (int j = 0; j < fields.Length; j++)
+            //{
+            //    //amennyiben még nem lett beállítva semelyik mezőre sem az elsődleges kulcs
+            //    if (!fields.Any(x => x.IsPrimaryKey))
+            //    {
+            //        bool isPrimaryKey = lines[tableLineIndex + j + 1].Contains("ez a kulcs");
+            //        if (isPrimaryKey)
+            //        {
+            //            fields[j].SetupIsPrimaryKey(true);
+            //        }
+            //    }
+            //    //minden esetben van a mezőnek alapértelmezett típusa
+            //    //TODO:
+            //    fields[j].SetupTypeOfField(lines[tableLineIndex + j + 1]);
+            //}
         }
 
         /// <summary>

@@ -114,7 +114,7 @@ namespace SQLCreator.Assets
                     for (int j = 0; j < tableInfo.FieldData.Length; j++)
                     {
                         string s = "";
-                        if(tableInfo.FieldData[j].TypeOfField == Field.DEFAULT_VALUE)
+                        if(tableInfo.FieldData[j].TypeOfField == FieldTypes.DEFAULT_VALUE)
                         {
                             if(tableInfo.FieldData[j].FieldValue[i] != "")
                             {
@@ -159,23 +159,21 @@ namespace SQLCreator.Assets
         {
             List<ITable> tables = new List<ITable>();
 
-
-            var first = this._dbCreator.Tables.Where(x => !x.HasForeignKey).FirstOrDefault();
-            int i = 0;
-            if (first != null)
+            foreach (var item in this._dbCreator.Tables.Where(x=>!x.HasForeignKey))
             {
-                tables.Add(first);
+                tables.Add(item);
             }
 
+            int i = 0;
             while (i < this._dbCreator.Tables.Length)
             {
                 var v = (from X in this._dbCreator.Tables[i].FieldData
                          from Y in tables
                          from Y2 in Y.FieldData
-                         where X.IsForeignKey && X.FieldName == Y2.FieldName
+                         where X.FieldName == Y2.FieldName
                          select this._dbCreator.Tables[i]).FirstOrDefault();
 
-                if (v != null)
+                if (v != null && !tables.Contains(v))
                 {
                     tables.Add(v);
                 }

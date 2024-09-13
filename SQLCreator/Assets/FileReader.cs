@@ -4,6 +4,9 @@ using Microsoft.Win32;
 using SQLCreator.Interfaces;
 using SQLCreator.Model;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Windows.Shapes;
 using IOPath = System.IO.Path;
 
 namespace SQLCreator.Assets
@@ -20,11 +23,11 @@ namespace SQLCreator.Assets
             string[] destinations = fModelValue.TxtFileDestination.Split('\n');
             List<string[]> datas = new List<string[]>();
 
-            foreach (string path in destinations)
+            for (int i = 0; i < destinations.Length; i++)
             {
-                datas.Add(File.ReadAllLines(path));
+                datas.Add(File.ReadAllLines(destinations[i], Encoding.Latin1));
+                datas[i][0] = datas[i][0].ToLower();
             }
-
             return datas;
         }
 
@@ -39,7 +42,7 @@ namespace SQLCreator.Assets
 
                 for (int i = 0; i < splittedPages.Length; i++)
                 {
-                    dataOnPages[i] = PdfTextExtractor.GetTextFromPage(reader, int.Parse(splittedPages[i]), Strategy);
+                    dataOnPages[i] = PdfTextExtractor.GetTextFromPage(reader, int.Parse(splittedPages[i]), Strategy).ToLower();
                 }
             }
 
@@ -122,21 +125,23 @@ namespace SQLCreator.Assets
         /// <returns><c>0</c> amennyiben nem találtuk meg a megfelelő oldalt, <c>különben</c> az az oldal, ahol megtalálható az adatbázis leírását</returns>
         private int GetTablePageNum(string path)
         {
-            const string SEARCHED_ITEM = "Táblák"; //keresett szó
-            int pageNum = -1;
+            //TODO: 2x keressük meg a táblák részt. Ezt javítani kellene és máshova tenni
+            string[] SEARCHED_ITEM = { "Táblák:", "adattáblák", "tábla" }; //keresett szó
             using (PdfReader reader = new PdfReader(path))
             {
                 ITextExtractionStrategy Strategy = new LocationTextExtractionStrategy();
 
                 int i = 1;
-                while (i <= reader.NumberOfPages && !PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Contains(SEARCHED_ITEM))
+                string[] aSplit = PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Split('\n'); //nem működik
+                var b = Algorithms.ContainsAny(aSplit, SEARCHED_ITEM);
+                while (i <= reader.NumberOfPages && !PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Split('\n').Any(x => SEARCHED_ITEM.Contains(x)))
                 {
                     i++;
                 }
-                pageNum = i < reader.NumberOfPages ? i : pageNum;
+                return i < reader.NumberOfPages ? i : -1;
             }
 
-            return pageNum;
+
         }
     }
 }

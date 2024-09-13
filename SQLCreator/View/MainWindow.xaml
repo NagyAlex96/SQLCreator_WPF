@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SQLCreator"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:VM ="clr-namespace:SQLCreator.ViewModel"
         mc:Ignorable="d"
         FontFamily="Times New Roman"
@@ -26,10 +27,9 @@
         <Style TargetType="Button" x:Key="btnMenu">
             <Setter Property="Height" Value="50"/>
             <Setter Property="BorderBrush" Value="black"/>
-            <Setter Property="BorderThickness" Value=".5 1"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="16"/>
         </Style>
-
         <Style TargetType="Viewbox">
             <Setter Property="Stretch" Value="Fill"/>
             <Setter Property="StretchDirection" Value="Both"/>
@@ -41,11 +41,6 @@
             <Setter Property="BorderBrush" Value="Black"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="Wheat"/>
-        </Style>
-
-        <Style TargetType="Border">
-            <Setter Property="BorderBrush" Value="Black"/>
-            <Setter Property="BorderThickness" Value="1 0 1 1"/>
         </Style>
 
         <Style TargetType="Run" x:Key="runDetails">
@@ -60,21 +55,163 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="9*"/>
-            <ColumnDefinition Width="2.5*"/>
-
+            <ColumnDefinition Width="1.065*"/>
+            <ColumnDefinition Width="8*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Menüsor jobboldalt -->
+
+        <!-- oldalsó menü -->
+        <Viewbox Grid.Column="0" HorizontalAlignment="Left">
+            <Grid Background="Wheat">
+                
+                <!-- menüléc -->
+                <Grid Background="#BF00FF" Height="75" VerticalAlignment="Top">
+                    <Border BorderThickness="1" BorderBrush="Black">
+                        <Label Content="SQL Creator" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Border>
+                </Grid>
+
+                <!-- gombok -->
+                <Grid VerticalAlignment="Top" Height="580">
+                    <Button Command="{Binding AddFilesCommand}" Style="{StaticResource btnMenu}" Margin="0,102,0,428">
+                        <StackPanel Orientation="Horizontal" Width="150">
+                            <materialDesign:PackIcon Kind="Add" Foreground="Black" Width="40" Height="40" VerticalAlignment="Center"/>
+                            <TextBlock Text="Hozzáadás" VerticalAlignment="Center" Margin="5, 0,0,0" FontSize="20"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ModifyFileCommand}" Style="{StaticResource btnMenu}" Margin="0,168,0,362">
+                        <StackPanel Orientation="Horizontal" Width="150">
+                            <materialDesign:PackIcon Kind="FileDocumentEdit" Foreground="Black" Width="40" Height="40" VerticalAlignment="Center"/>
+                            <TextBlock Text="Módosít" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="20"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding RemoveFileCommand}" Style="{StaticResource btnMenu}" Margin="0,233,0,297">
+                        <StackPanel Orientation="Horizontal" Width="150">
+                            <materialDesign:PackIcon Kind="Delete" Foreground="Black" Width="40" Height="40" VerticalAlignment="Center"/>
+                            <TextBlock Text="Törlés" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="20"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ProcessFileCommand}" Style="{StaticResource btnMenu}" Margin="0,333,0,197">
+                        <StackPanel Orientation="Horizontal" Width="150">
+                            <materialDesign:PackIcon Kind="Autorenew" Foreground="Black" Width="40" Height="40" VerticalAlignment="Center"/>
+                            <TextBlock Text="Feldolgozás" VerticalAlignment="Center" Margin="0" FontSize="20"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ProcessAllFileCommmand}" Style="{StaticResource btnMenu}" Margin="0,399,0,131">
+                        <StackPanel Orientation="Horizontal" Width="150">
+                            <materialDesign:PackIcon Kind="Autorenew" Foreground="Black" Width="40" Height="40" VerticalAlignment="Center"/>
+                            <TextBlock Text="Mind feldolgoz" VerticalAlignment="Center" Margin="0" FontSize="17.5"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+            </Grid>
+        </Viewbox>
+
         <Viewbox Grid.Column="1">
-            <Grid Background="Wheat" Height="720" Width="200">
+            <Grid Width="1280" Height="720">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="8*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="12*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="8*"/>
+                </Grid.ColumnDefinitions>
 
-                <Button Command="{Binding AddFilesCommand}" Style="{StaticResource btnMenu}" Content="Hozzáadás" Margin="0,86,0,584"/>
-                <Button Command="{Binding ModifyFileCommand}"  Style="{StaticResource btnMenu}" Content="Módosítás" Margin="0,168,0,502"/>
-                <Button Command="{Binding RemoveFileCommand}" Style="{StaticResource btnMenu}" Content="Törlés" Margin="0,246,0,424"/>
-                <Button Command="{Binding ProcessFileCommand}" Style="{StaticResource btnMenu}" Content="Feldolgoz" Margin="0,505,0,165"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="9*"/>
+                </Grid.RowDefinitions>
 
-                <!-- Előlnézet -->
+                <Grid Background="CornflowerBlue" Grid.Column="0" Grid.RowSpan="2"/>
+                <Grid Background="CornflowerBlue" Grid.Column="2" Grid.RowSpan="2"/>
+                <Grid Background="CornflowerBlue" Grid.Column="4" Grid.RowSpan="2"/>
+
+                <Label Style="{StaticResource lbListTitle}" Grid.Column="1" Grid.Row="0" Content="Hozzáadott"/>
+
+                <Label Style="{StaticResource lbListTitle}" Grid.Column="5" Grid.Row="0" Content="Feldolgozott"/>
+                <Label Style="{StaticResource lbListTitle}" Grid.Column="3" Grid.Row="0" Content="Adatok"/>
+
+                <ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AddedFiles}" SelectedItem="{Binding SelectedItem}" BorderBrush="Black" BorderThickness="1 0 1 1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Black" BorderThickness="2">
+                                <StackPanel CanHorizontallyScroll="False">
+
+                                    <TextBlock>
+                    <Run Text="Pdf fájl neve: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding PdfFileName}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                    <Run Text="Pdf oldalszám: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding PdfPageNum}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                    <Run Text="Txt fájl neve: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding TxtFileName}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                    <Run Text="Mentés helye: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding OutPutDestination}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <ListBox Grid.Row="1" Grid.Column="5" ItemsSource="{Binding ProcessedFiles}" BorderBrush="Black" BorderThickness="1 0 1 1" IsEnabled="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Black" BorderThickness="2">
+                                <StackPanel CanHorizontallyScroll="False">
+
+                                    <TextBlock>
+                    <Run Text="Pdf fájl neve: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding PdfFileName}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                    <Run Text="Pdf oldalszám: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding PdfPageNum}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                    <Run Text="Txt fájl neve: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding TxtFileName}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+
+                                    <TextBlock>
+                    <Run Text="Mentés helye: " Style="{StaticResource runHeader}"/>
+                        <LineBreak/>
+                    <Run Text="{Binding OutPutDestination}" Style="{StaticResource runDetails}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+
+            </Grid>
+        </Viewbox>
+
+        <!--
 
             </Grid>
 
@@ -112,41 +249,7 @@
 
                 <Label Style="{StaticResource lbListTitle}" Grid.Column="4" Grid.Row="0" Content="..."/>
 
-                <ListBox Grid.Row="1" ItemsSource="{Binding AddedFiles}" SelectedItem="{Binding SelectedItem}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="Black" BorderThickness="2">
-                                <StackPanel CanHorizontallyScroll="False">
-
-                                    <TextBlock>
-                                    <Run Text="Pdf fájl neve: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                    <Run Text="{Binding PdfFileName}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-
-                                    <TextBlock>
-                                    <Run Text="Pdf oldalszám: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                    <Run Text="{Binding PdfPageNum}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-
-                                    <TextBlock>
-                                    <Run Text="Txt fájl neve: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                    <Run Text="{Binding TxtFileName}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-
-                                    <TextBlock>
-                                    <Run Text="Mentés helye: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                    <Run Text="{Binding OutPutDestination}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-
+                
                 <ListBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding ProcessedFiles}" IsEnabled="False">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -184,7 +287,7 @@
 
                 
             </Grid>
-        </Viewbox>
+        </Viewbox>-->
 
 
     </Grid>

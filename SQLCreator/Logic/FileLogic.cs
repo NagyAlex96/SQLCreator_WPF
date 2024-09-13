@@ -1,6 +1,7 @@
 ﻿using SQLCreator.Assets;
 using SQLCreator.Interfaces;
 using SQLCreator.Model;
+using System.Diagnostics;
 
 namespace SQLCreator.Logic
 {
@@ -37,11 +38,21 @@ namespace SQLCreator.Logic
 
         public void ProcessFile(IList<FileModel> fileModels)
         {
-            //foreach (var item in fileModels)
-            //{
-            //    Task _task = new Task(() => { ProcessFile(item); }, TaskCreationOptions.LongRunning);
-            //    _task.Start();
-            //}
+            foreach (var item in fileModels)
+            {
+                try
+                {
+                    ProcessFile(item);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.ToString());
+                    throw;
+                }
+
+                //Task _task = new Task(() => { ProcessFile(item); }, TaskCreationOptions.LongRunning);
+                //_task.Start();
+            }
         }
 
         public void ProcessFile(FileModel fileModel)

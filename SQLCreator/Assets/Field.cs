@@ -9,19 +9,6 @@ namespace SQLCreator.Assets
 
         }
 
-        public static readonly string DEFAULT_VALUE= "VARCHAR(64)";
-
-        /// <summary>
-        /// Egy mező lehetséges típusa
-        /// </summary>
-        private static readonly Dictionary<string, string> PossibleTypesOfField = new Dictionary<string, string>
-        {
-            { "(szám)","INT"},
-            { "(szöveg)","VARCHAR(64)"},
-            { "(logikai)","BOOLEAN"},
-            { "(dátum)","DATE"},
-        };
-
         public string FieldName { get; private set; }
 
         public string TypeOfField { get; private set; }
@@ -59,18 +46,14 @@ namespace SQLCreator.Assets
         public IField SetupTypeOfField(string line)
         {
             //a kulcsok közül kiválasztjuk azt, amelyik megtalálható az adott sorban
-            var values = PossibleTypesOfField.Keys
+            var values = FieldTypes.PossibleTypesOfField.Keys
             .Select((key, idx) => new { key, idx })
             .Where(x => line.Contains(x.key))
             .Select((x => (x.key, x.idx))).FirstOrDefault();
             
             if(values.key != null) //megtaláltuk a lehetséges opciók közül
             {
-                this.TypeOfField = PossibleTypesOfField[values.key];
-            }
-            else //nem találtuk meg, alapértelmezett beállítása
-            {
-                this.TypeOfField = DEFAULT_VALUE;
+                this.TypeOfField = FieldTypes.PossibleTypesOfField[values.key];
             }
 
             return this;
@@ -102,7 +85,7 @@ namespace SQLCreator.Assets
 
         public override string ToString()
         {
-            return $"{this.FieldName} {this.TypeOfField} NOT NULL";
+            return $"{this.FieldName} {this.TypeOfField}";
         }
     }
 }
