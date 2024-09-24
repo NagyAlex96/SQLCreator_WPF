@@ -8,31 +8,24 @@ namespace SQLCreator.Interfaces
         /// Fájl(ok) hozzáadása
         /// </summary>
         /// <param name="fileModels">Collection, ahova mentésre kerül</param>
-        void AddFile(IList<FileModel> fileModels);
+        void AddFile(IList<DataBaseModel> fileModels);
         /// <summary>
         /// Kijelölt fájlok módosítása
         /// </summary>
         /// <param name="fModel">Módosítandó item</param>
-        void Modify(FileModel fModel);
+        void Modify(DataBaseModel fModel);
         /// <summary>
         /// Kijelölt fájl törlése
         /// </summary>
         /// <param name="removeFrom">Honnan szeretnénk törölni</param>
         /// <param name="removeWhat">Törlendő fájl</param>
-        void Delete(IList<FileModel> removeFrom, FileModel removeWhat);
-
+        void Delete(IList<DataBaseModel> removeFrom, DataBaseModel removeWhat);
         /// <summary>
         /// Egy itemet szeretnénk átmozgatni egyik listából a másikba
         /// </summary>
         /// <param name="moveFrom">Ahonnan átmozgatjuk</param>
         /// <param name="moveTo">Ahova átmozgatjuk</param>
         /// <param name="item">Amit átmozgatunk</param>
-        public void MoveFileFromTo(IList<FileModel> moveFrom, IList<FileModel> moveTo, FileModel item);
-
-        /// <summary>
-        /// Fájl feldolgozás
-        /// </summary>
-        /// <param name="fileModel">Kijelölt fájl</param>
-        public void ProcessFile(FileModel fileModel);
+        public void MoveFileFromTo(IList<DataBaseModel> moveFrom, IList<DataBaseModel> moveTo, DataBaseModel item);
     }
 }

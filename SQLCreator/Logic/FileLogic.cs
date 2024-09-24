@@ -1,68 +1,34 @@
 ﻿using SQLCreator.Assets;
 using SQLCreator.Interfaces;
 using SQLCreator.Model;
-using System.Diagnostics;
 
 namespace SQLCreator.Logic
 {
     public class FileLogic : IFileLogic
     {
-        private IFileReader _fileManager;
-        private IDbCreatorLogic _dbCreatorLogic;
-        private IFileWriter _fWriter;
+        IFileReaderLogic _fileReaderLogic = new FileReaderLogic();
 
-        public FileLogic()
+        public void AddFile(IList<DataBaseModel> fileModels)
         {
-            this._fileManager = new FileReader();
-            this._dbCreatorLogic = new DBCreatorLogic();
-        }
-
-        public void AddFile(IList<FileModel> fileModels)
-        {
-            foreach (var item in _fileManager.FileOpener())
+            foreach (var item in _fileReaderLogic.FileOpener())
             {
                 fileModels.Add(item);
             }
         }
 
-        public void Modify(FileModel fModel)
+        public void Modify(DataBaseModel fModel)
         {
+            //TODO
             //ModifyPage Modify = new ModifyPage(fModel, true);
             //Modify.ShowDialog();
         }
 
-        public void Delete(IList<FileModel> removeFrom, FileModel removeWhat)
+        public void Delete(IList<DataBaseModel> removeFrom, DataBaseModel removeWhat)
         {
             removeFrom.Remove(removeWhat);
         }
 
-        public void ProcessFile(IList<FileModel> fileModels)
-        {
-            foreach (var item in fileModels)
-            {
-                try
-                {
-                    ProcessFile(item);
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e.ToString());
-                    throw;
-                }
-
-                //Task _task = new Task(() => { ProcessFile(item); }, TaskCreationOptions.LongRunning);
-                //_task.Start();
-            }
-        }
-
-        public void ProcessFile(FileModel fileModel)
-        {
-            this._dbCreatorLogic.CreateDataBase(this._fileManager.PdfReader(fileModel), this._fileManager.TxtReader(fileModel), fileModel.TxtFileName);
-            this._fWriter = new FileWriter(this._dbCreatorLogic.DbCreator);
-            this._fWriter.SQLWriter(fileModel.OutPutDestination);
-        }
-
-        public void MoveFileFromTo(IList<FileModel> moveFrom, IList<FileModel> moveTo, FileModel item)
+        public void MoveFileFromTo(IList<DataBaseModel> moveFrom, IList<DataBaseModel> moveTo, DataBaseModel item)
         {
             moveTo.Add(item);
             Delete(moveFrom, item);

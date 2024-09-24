@@ -13,7 +13,7 @@ namespace SQLCreator.Assets
         /// <summary>
         /// Egy mező lehetséges típusa
         /// </summary>
-        public static readonly Dictionary<string, string> PossibleTypesOfField = new Dictionary<string, string>
+        static readonly Dictionary<string, string> PossibleTypesOfField = new Dictionary<string, string>
         {
             { "(szám)","INT NOT NULL"},
             { "(szöveg)","VARCHAR(64) NOT NULL"},
@@ -21,5 +21,38 @@ namespace SQLCreator.Assets
             { "(dátum)","DATE NOT NULL"},
             {"(számláló)", "INT AUTO_INCREMENT" }
         };
+
+        public static string Setup(string line)
+        {
+            if (line.Contains("(szám)"))
+            {
+                if (line.Contains("tizedes jegy pontosan"))
+                {
+                    return "DOUBLE";
+                }
+                else
+                {
+                    return "INT";
+                }
+            }
+            else if (line.Contains("(logikai)"))
+            {
+                return "BOOLEAN";
+            }
+            else if (line.Contains("(dátum)"))
+            {
+                return "DATE";
+            }
+            else if (line.Contains("(számláló)"))
+            {
+                return "INT AUTO_INCREMENT";
+            }
+            else
+            {
+                return "VARCHAR(64)";
+            }
+
+
+        }
     }
 }

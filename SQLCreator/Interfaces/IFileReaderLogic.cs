@@ -2,26 +2,26 @@
 
 namespace SQLCreator.Interfaces
 {
-    public interface IFileReader
+    public interface IFileReaderLogic
     {
         /// <summary>
         /// Fájl megnyitása
         /// </summary>
         /// <returns></returns>
-        FileModel[] FileOpener();
+        DataBaseModel[] FileOpener();
 
         /// <summary>
         /// Txtolvasó
         /// </summary>
-        /// <param name="fModelValue"></param>
+        /// <param name="DBaseModelValue"></param>
         /// <returns>Txt fájlokban található adatok, sorok</returns>
-        List<string[]> TxtReader(FileModel fModelValue);
+        List<string[]> TxtReader(DataBaseModel DBaseModelValue);
 
         /// <summary>
         /// Pdf olvasó
         /// </summary>
-        /// <param name="fModelValue"></param>
+        /// <param name="DBaseModelValue"></param>
         /// <returns>Az adott oldalakon található adatok</returns>
-        string[] PdfReader(FileModel fModelValue);
+        string[] PdfReader(DataBaseModel DBaseModelValue);
     }
 }

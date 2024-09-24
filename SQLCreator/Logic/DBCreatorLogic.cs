@@ -1,278 +1,345 @@
-﻿using SQLCreator.Assets;
+﻿using iTextSharp.text.pdf.qrcode;
+using SQLCreator.Assets;
 using SQLCreator.Interfaces;
-using System.Linq;
+using SQLCreator.Model;
+using System.Collections.ObjectModel;
+using System.Configuration;
 
 namespace SQLCreator.Logic
 {
     public class DBCreatorLogic : IDbCreatorLogic
     {
-        IDBCreator _dbCreator;
-        /// <summary>
-        /// A táblák rész a pdf hányadik sorától indul
-        /// </summary>
-        private int _tableStartLineIndex;
-        public IDBCreator DbCreator => this._dbCreator;
-
+        //TODO:
+        //2010_május - 12-es feladat
+        private IFileReaderLogic _readerLogic;
         public DBCreatorLogic()
         {
-            this._dbCreator = new DBCreator();
+            this._readerLogic = new FileReaderLogic();
         }
 
-        public void CreateDataBase(in string[] pdfDataOnPage, in List<string[]> txtFileLines, in string txtFileName)
+        public DataBaseModel CreateDataBase(in DataBaseModel DBModel)
         {
-            this._dbCreator.SetupTables(txtFileLines.Count);
+            DataBaseModel NewDataBase = DBModel;
+            ObservableCollection<TableModel> tempTables = new ObservableCollection<TableModel>();
 
-            //pdf sorai
-            string[] pdfLines = pdfDataOnPage.Select(x => x.Split('\n')).FirstOrDefault();
-            this._tableStartLineIndex = pdfLines
-                    .Select((line, index) => new { line, index })
-                    .Where(x => x.line.Contains("táblák:"))
-                    .Select(x => x.index)
-                    .FirstOrDefault(-1);
 
-            ITable[] tempTables = new ITable[txtFileLines.Count];
-            for (int i = 0; i < tempTables.Length; i++)
+            string[] PdfLinesData = this._readerLogic.PdfReader(NewDataBase);
+            NewDataBase.NameOfDb = SetNameOfDb(PdfLinesData[0].Split('\n'));
+
+            for (int i = 0; i < NewDataBase.TxtFileName.Count; i++)
             {
-                ITable table = new Table(txtFileName.Split('\n')[i], txtFileLines[i][0].Split('\t').Length); //mindegyik txt-hez tartozó mezőnek ugyanannyi sora lesz
-                IField[] fields = TxtDataProcessing(txtFileLines[i]);
-                AddFieldToTable(table, fields);
-                tempTables[i] = table;
+                TableModel table = new TableModel();
+                table.TableName = NewDataBase.TxtFileName[i];
+                table.FieldInfo = TxtDataProcessing(_readerLogic.TxtReader(NewDataBase)[i]);
+                tempTables.Add(table);
             }
 
-            for (int i = 0; i < tempTables.Length; i++) //0-1, 1-2, 2-3, 3-4
-            {
+            PdfDataProcessing(tempTables, PdfLinesData, int.Parse(NewDataBase.PdfLineNum) + 1);
 
 
-                PdfDataProcessing(tempTables[i], tempTables, tempTables[i].FieldData, pdfDataOnPage);
+            SetReferencesAndFkeys(tempTables);
 
-
-                this._dbCreator.AddTable(tempTables[i]);
-            }
-
-            SetReferencesAndFkeys();
-            ;
-        }
-
-        private void SetReferencesAndFkeys()
-        {
-            foreach (ITable tableInfo in this._dbCreator.Tables)
-            {
-                List<ITable> otherTables = this._dbCreator.Tables.ToList();
-                otherTables.Remove(tableInfo);
-
-                foreach (ITable otherTablesInfo in otherTables)
-                {
-                    var selectedField = (from x in otherTablesInfo.FieldData
-                                         from y in tableInfo.FieldData
-                                         where x.FieldName == y.FieldName && !(x.IsForeignKey || y.IsForeignKey)
-                                         select y).FirstOrDefault();
-
-                    if (selectedField != null)
-                    {
-                        selectedField.SetupReferenceTo($"{otherTablesInfo.TableName} ({selectedField.FieldName})");
-                        selectedField.SetupIsForeignKey(true);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Egyéb kapcsolatok és adatok beállítása a pdf-ben található adatok alapján
-        /// </summary>
-        /// <param name="table"></param>
-        /// <param name="fields"></param>
-        /// <param name="pdfDataOnPage">A pdf adott oldalán található sorok (adatok)</param>
-        private void PdfDataProcessing(in ITable table, in ITable[] tables, IField[] fields, in string[] pdfDataOnPage)
-        {
-            foreach (var page in pdfDataOnPage)
-            {
-                string[] lines = page.Split('\n');
-                if (this._dbCreator.NameOfDB == null)
-                {
-                    SetNameOfDb(lines);
-                }
-
-                SetPKAndTypeOfField(table, tables, fields, lines, this._tableStartLineIndex);
-
-                ;
-            }
-
+            Algorithms.SortTablesOrder(tempTables);
+            NewDataBase.TablesInfo = tempTables;
+            return NewDataBase;
         }
 
         /// <summary>
         /// Adatbázis nevének beállítása
         /// </summary>
-        /// <param name="lines">Sorok</param>
-        private void SetNameOfDb(in string[] lines)
+        /// <param name="pdfLines">PDF Sorok</param>
+        /// <returns>Adatbázis neve</returns>
+        private string SetNameOfDb(in string[] pdfLines)
         {
             int i = 0;
-
             bool isDigit = false;
 
             do
             {
-                isDigit = char.IsDigit(lines[i], 0);
+                isDigit = char.IsDigit(pdfLines[i], 0);
                 i++;
-            } while (i < lines.Length && !isDigit);
+            } while (i < pdfLines.Length && !isDigit);
 
-            this._dbCreator.SetupNameOfDb(lines[i - 1].Substring(3));
+            return pdfLines[i - 1].Substring(3);
         }
 
-        private void SetPKAndTypeOfField(in ITable table, in ITable[] tables, IField[] fields, in string[] lines, int index)
+        /// <summary>
+        /// Hivatkozások beállítása, táblák összekapcsolása
+        /// </summary>
+        /// <param name="tableModels">Táblák</param>
+        private void SetReferencesAndFkeys(ObservableCollection<TableModel> tableModels)
         {
-            int from = index;
-
-
-            from = FindTableLineIndex(table.TableName, lines, from);
-
-
-            //Amennyiben megtaláltuk a tábla sorát a pdf-ben
-            if (from >= 0)
+            //rendelkezésre álló táblák
+            foreach (var selectedTable in tableModels)
             {
-                ProcessFields(fields, tables, lines, from);
+                List<TableModel> otherTables = tableModels.ToList(); //összes tábla
+                otherTables.Remove(selectedTable); //kiválasztott tábla kivétele
+
+                foreach (var otherTable in otherTables)
+                {
+                    //kiválasztjuk azt a mezőt, ahol a mezőnevek egyenlőek és sem az "A" táblának sem pedig a "B" táblának a mezője nem idegenkulcs
+                    var matchResult = (from otherTableFieldInfo in otherTable.FieldInfo
+                                       from selectedTableFieldInfo in selectedTable.FieldInfo
+                                       where otherTableFieldInfo.FieldName == selectedTableFieldInfo.FieldName && !(otherTableFieldInfo.IsForeignKey || selectedTableFieldInfo.IsForeignKey)
+                                       select (otherTableFieldInfo, selectedTableFieldInfo)).FirstOrDefault();
+
+                    //amennyiben nincs ilyen mező
+                    if (matchResult.otherTableFieldInfo == null || matchResult.selectedTableFieldInfo == null)
+                    {
+                        continue;
+                    }
+
+                    //amennyiben mind a két mező elsődlegeskulcs (furcsa)
+                    if (matchResult.selectedTableFieldInfo.IsPrimaryKey && matchResult.otherTableFieldInfo.IsPrimaryKey)
+                    {
+                        //összehasonlítás eredménye
+                        int compareResult = OrderComparer(matchResult.otherTableFieldInfo, matchResult.selectedTableFieldInfo);
+                        switch (compareResult)
+                        {
+                            //kiválasztott tábla mezőjének értékei előbb vannak, mint a másik tábla mezőjének elemei
+                            case -1: SetReference(matchResult.selectedTableFieldInfo, otherTable, matchResult.selectedTableFieldInfo); break;
+                            case 0:
+                                //amennyiben egyenlő sorrendben vannak a táblák mezőjének értékei akkor, a sorrend lényegtelen, DE kiválasztjuk azt ahol, nincs még idegenkulcs
+                                if (otherTable.FieldInfo.Any(x => x.IsForeignKey))
+                                {
+                                    SetReference(matchResult.selectedTableFieldInfo, otherTable, matchResult.selectedTableFieldInfo);
+                                }
+                                else
+                                {
+                                    SetReference(matchResult.otherTableFieldInfo, selectedTable, matchResult.selectedTableFieldInfo);
+                                }
+                                break;
+                            case 1: SetReference(matchResult.otherTableFieldInfo, selectedTable, matchResult.selectedTableFieldInfo); break;
+                            default:
+                                break;
+                        }
+                    }
+                    else //nem elsődleges kulcs mind a kettő
+                    {
+                        if (otherTable.FieldInfo.Any(x => x.IsPrimaryKey))
+                        {
+                            SetReference(matchResult.selectedTableFieldInfo, otherTable, matchResult.selectedTableFieldInfo);
+                        }
+                        else
+                        {
+                            SetReference(matchResult.otherTableFieldInfo, selectedTable, matchResult.selectedTableFieldInfo);
+                        }
+                    }
+                }
+                SetRemainingReference(selectedTable.FieldInfo, otherTables);
             }
+
+        }
+        private void SetRemainingReference(ObservableCollection<FieldModel> fieldModels, List<TableModel> tableRef)
+        {
+            foreach (var model in fieldModels)
+            {
+                foreach (var table in tableRef)
+                {
+                    SetReference(model, table, table.FieldInfo);
+                }
+            }
+        }
+
+        private void SetReference(FieldModel fModel, TableModel tableRef, ObservableCollection<FieldModel> fieldRefs)
+        {
+            foreach(var fRefs in fieldRefs)
+            {
+                SetReference(fModel, tableRef, fRefs, fModel.IsForeignKey ? true : false);
+            }
+        }
+        private void SetReference(FieldModel fModel, TableModel tableRef, FieldModel fieldRef, bool setFKey = true)
+        {
+            fModel.References.Add(ReferencTo(tableRef, fieldRef));
+            fModel.IsForeignKey = setFKey;
+        }
+
+        private string ReferencTo(TableModel tModel, FieldModel fModel)
+        {
+            return $"{tModel.TableName} ({fModel.FieldName})";
+        }
+
+        /// <summary>
+        /// Megvizsgáljuk, hogy az elemek növekvő sorrendben követik-e egymást
+        /// </summary>
+        /// <param name="fieldA">Mit hasonlítunk</param>
+        /// <param name="fieldB">Mihez hasonlítunk</param>
+        /// <returns>CompareTo eredményét adja vissza</returns>
+        private int OrderComparer(FieldModel fieldA, FieldModel fieldB)
+        {
+            int orderNum = 0;
+            int index = 0;
+            do
+            {
+                orderNum = fieldA.FieldValue[index++].CompareTo(fieldB.FieldValue[index++]); //egyenlő-e a két érték
+
+                if (fieldA.FieldValue[index - 1].CompareTo(fieldA.FieldValue[index]) > -1) //az értékek sorrendben követik-e egymást az "A" mező esetén
+                {
+                    orderNum = 1;
+                }
+                else if (fieldB.FieldValue[index - 1].CompareTo(fieldB.FieldValue[index]) > -1)//az értékek sorrendben követik-e egymást az "B" mező esetén
+                {
+                    orderNum = -1;
+                }
+            } while (index < fieldA.FieldValue.Count && orderNum == 0);
+
+            return orderNum;
+        }
+
+        #region PDF feldolgozás
+
+        /// <summary>
+        /// Egyéb kapcsolatok és adatok beállítása a pdf-ben található adatok alapján
+        /// </summary>
+        /// <param name="allTablesModel">Rendelkezésünkre álló táblák</param>
+        /// <param name="pdfDataOnPage">PDF adott oldalán található adatok <c>soronként</c></param>
+        /// <param name="index">Hányadik sortól indul a táblák rész</param>
+        private void PdfDataProcessing(ObservableCollection<TableModel> allTablesModel, in string[] pdfDataOnPage, in int index)
+        {
+            foreach (var table in allTablesModel)
+            {
+                foreach (var dataOnPage in pdfDataOnPage) //ez a foreach arra kell, ha az információk több oldalon lennének
+                {
+                    SetFields(allTablesModel, table, dataOnPage.Split('\n'), index);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Mezők beállítása
+        /// </summary>
+        /// <param name="allTablesModel">Összes tábla</param>
+        /// <param name="settableTable">Beállítandó tábla</param>
+        /// <param name="pdfDataOnPage">PDF adott oldalán található adatok <c>soronként</c></param>
+        /// <param name="fromIndex">Hányadik sortól indul a táblák rész</param>
+        private void SetFields(ObservableCollection<TableModel> allTablesModel, TableModel settableTable, string[] pdfDataOnPage, int fromIndex)
+        {
+            string fullTableName = $"{settableTable.TableName} (";
+
+            for (int i = 0; i < settableTable.FieldInfo.Count; i++)
+            {
+                if (i == settableTable.FieldInfo.Count - 1)
+                {
+                    fullTableName += $"{settableTable.FieldInfo[i].FieldName})";
+                }
+                else
+                {
+                    fullTableName += $"{settableTable.FieldInfo[i].FieldName}, ";
+                }
+            }
+
+            fromIndex = FindTableLineIndex(fullTableName, pdfDataOnPage, fromIndex);
+            //fromIndex = FindTableLineIndex(settableTable.FieldInfo[0].FieldName, pdfDataOnPage, fromIndex);
+            SetTypeOfFieldAndPKeys(fromIndex, (fromIndex + settableTable.FieldInfo.Count + 1), settableTable.FieldInfo, pdfDataOnPage);
         }
 
         /// <summary>
         /// Megkeresi a pdf-ben a táblához tartozó sort
         /// </summary>
-        /// <param name="tableName">Tábla neve</param>
+        /// <param name="searchedTable">Tábla neve</param>
         /// <param name="lines">Pdf-ben található sorok</param>
         /// <param name="startIndex">Indulóindex</param>
         /// <returns><c>InvalidOperationException</c> amennyiben nem található az adott táblához leírás a pdf-ben</returns>
-        private int FindTableLineIndex(in string tableName, in string[] lines, in int startIndex)
+        private int FindTableLineIndex(in string searchedTable, in string[] lines, in int startIndex)
         {
             for (int i = startIndex; i < lines.Length; i++)
             {
-                if (lines[i].Contains(tableName))
+                if (lines[i].ToLower().Contains(searchedTable.ToLower()))
                 {
                     return i;
                 }
             }
-
+            return -1;
             throw new InvalidOperationException("The table was not found!");
         }
 
         /// <summary>
-        /// Beállítja a mezők értékeit
+        /// Elsődleges kulcs és mezőtípus beállítása
         /// </summary>
-        /// <param name="fields">Mezők</param>
-        /// <param name="lines">Ahol az adatok vannak</param>
-        /// <param name="fromTableIndex">Melyik sortól kezdve nézzük</param>
-        private void ProcessFields(IField[] fields, ITable[] tables, string[] lines, int fromTableIndex)
+        /// <param name="fromIndex">Hányadik sortól található meg a pdf-ben</param>
+        /// <param name="toIndex">Hányadik sorig tart a pdf-ben</param>
+        /// <param name="fieldModels">Táblához tartozó mezők</param>
+        /// <param name="pdfDataOnPage">PDF adott oldalán található adatok <c>soronként</c></param>
+        private void SetTypeOfFieldAndPKeys(int fromIndex, int toIndex, ObservableCollection<FieldModel> fieldModels, string[] pdfDataOnPage)
         {
-            //TODO
-            int toTableIndex = fromTableIndex + 1;
-            List<ITable> otherTables = tables.ToList();
-            var a = tables.Where(x => lines[fromTableIndex].Contains(x.TableName)).FirstOrDefault();
-            otherTables.Remove(a);
-
-            //megkeresi, hogy meddig tart a leírása az adott táblánál
-            while (toTableIndex < lines.Length && !otherTables.Any(table => lines[toTableIndex].Contains(table.TableName)))
+            int j = fromIndex + 1;
+            for (int i = 0; i < fieldModels.Count; i++) //végigmegyünk a mezőkön
             {
-                toTableIndex++;
-            }
-
-            int j = fromTableIndex + 1;
-            for (int i = 0; i < fields.Length; i++)
-            {
-                List<IField> otherFields = fields.ToList();
-                otherFields.Remove(fields[i]);
-                while (j < toTableIndex && !otherFields.Any(f => lines[j].SequenceEqual(f.FieldName)) && fields[i].TypeOfField == null)
+                while (j < toIndex && fieldModels[i].TypeOfField == null)
                 {
-                    //amennyiben még nem lett beállítva semelyik mezőre sem az elsődleges kulcs
-                    if (!fields.Any(x => x.IsPrimaryKey))
+                    if (!fieldModels.Any(field => field.IsPrimaryKey) && pdfDataOnPage[j].Contains("ez a kulcs"))
                     {
-                        bool isPrimaryKey = lines[j].Contains("ez a kulcs");
-                        if (isPrimaryKey)
-                        {
-                            fields[i].SetupIsPrimaryKey(true);
-                        }
+                        fieldModels[i].IsPrimaryKey = true;
                     }
-                    //minden esetben van a mezőnek alapértelmezett típusa
-                    fields[i].SetupTypeOfField(lines[j]);
+                    fieldModels[i].TypeOfField = (fieldModels[i].IsPrimaryKey ? FieldTypes.Setup(pdfDataOnPage[j]) + " NOT NULL" : FieldTypes.Setup(pdfDataOnPage[j]));
                     j++;
                 }
             }
-
-            //for (int j = 0; j < fields.Length; j++)
-            //{
-            //    //amennyiben még nem lett beállítva semelyik mezőre sem az elsődleges kulcs
-            //    if (!fields.Any(x => x.IsPrimaryKey))
-            //    {
-            //        bool isPrimaryKey = lines[tableLineIndex + j + 1].Contains("ez a kulcs");
-            //        if (isPrimaryKey)
-            //        {
-            //            fields[j].SetupIsPrimaryKey(true);
-            //        }
-            //    }
-            //    //minden esetben van a mezőnek alapértelmezett típusa
-            //    //TODO:
-            //    fields[j].SetupTypeOfField(lines[tableLineIndex + j + 1]);
-            //}
         }
+
+        #endregion
+
+        #region Txt-s feldolgozás
 
         /// <summary>
         /// Txt-ben lévő adatok feldolgozása
         /// </summary>
-        /// <param name="txtFileLines">Adatok</param>
+        /// <param name="txtFileLines">Adott fájlban található sorok (adatok)</param>
         /// <returns>Mezőkhöz tartozó név + adatok</returns>
-        private IField[] TxtDataProcessing(in string[] txtFileLines)
+        private ObservableCollection<FieldModel> TxtDataProcessing(in string[] txtFileLines)
         {
-            string[] fieldInfo = txtFileLines[0].Split('\t'); //kezdetben a 0-ik sorból kiszedjük a mezők neveit
-            IField[] fields = new IField[fieldInfo.Length]; //amennyi mezőnév található az első sorban, annyi mezőnk lesz
-            SetFieldNames(fields, fieldInfo, txtFileLines.Length - 1);
+            string[] fieldData = txtFileLines[0].Split('\t'); //kezdetben a 0-ik sorból kiszedjük a mezők neveit
+            ObservableCollection<FieldModel> fieldModels = new ObservableCollection<FieldModel>();
+            SetFieldNames(fieldModels, fieldData);
 
             for (int i = 1; i < txtFileLines.Length; i++)
             {
-                fieldInfo = txtFileLines[i].Split('\t'); //itt már nem a mezők nevei lesznek, hanem a hozzájuk tartozó adatok
-                SetFieldValues(fields, fieldInfo);
+                fieldData = txtFileLines[i].Split('\t'); //itt már nem a mezők nevei lesznek, hanem a hozzájuk tartozó adatok
+                SetFieldValues(fieldModels, fieldData);
             }
 
-            return fields;
+            return fieldModels;
         }
 
         /// <summary>
         /// Beállítjuk az mezőkhöz tartozó értékeket soronként
         /// </summary>
-        /// <param name="fields">Elérhető mezők</param>
+        /// <param name="fieldModels">Elérhető mezők</param>
         /// <param name="lineWithData">Egy sornyi adat</param>
-        private void SetFieldValues(IField[] fields, in string[] lineWithData)
+        private void SetFieldValues(ObservableCollection<FieldModel> fieldModels, in string[] lineWithData)
         {
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < fieldModels.Count; i++)
             {
-                fields[i].AddFieldValue(lineWithData[i]);
+                if (i >= lineWithData.Length) //amennyiben mondjuk a txt egyik sorából hiányzik a megfelelő mennyiségű adat
+                {
+                    fieldModels[i].FieldValue.Add("");
+                    continue;
+                }
+                //tryParse azért kell, mert a double típusú értékeket vesszővel van megadva, de az SQL (is) ponttal értelmezik
+                if (double.TryParse(lineWithData[i].Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out _))
+                {
+                    fieldModels[i].FieldValue.Add(lineWithData[i].Replace(',', '.'));
+                    continue;
+                }
+                fieldModels[i].FieldValue.Add(lineWithData[i]);
             }
         }
 
         /// <summary>
         /// Beállítjuk a mezőknek a nevét
         /// </summary>
-        /// <param name="fields">Mezők</param>
-        /// <param name="fieldNamesFromTxt">Mezőnevek</param>
-        /// <param name="maxLine">Mezők száma</param>
-        private void SetFieldNames(IField[] fields, in string[] fieldNamesFromTxt, in int maxLine)
+        /// <param name="fieldModels">Mezők</param>
+        /// <param name="fieldNamesFromTxt">Txt-ből kiszedett mezőnevek</param>
+        private void SetFieldNames(ObservableCollection<FieldModel> fieldModels, in string[] fieldNamesFromTxt)
         {
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < fieldNamesFromTxt.Length; i++)
             {
-                fields[i] = new Field();
-                fields[i].SetupFieldName(fieldNamesFromTxt[i]);
-                fields[i].SetupFieldNum(maxLine);
+                FieldModel fModel = new FieldModel();
+                fModel.FieldName = fieldNamesFromTxt[i];
+                fieldModels.Add(fModel);
             }
         }
 
-        /// <summary>
-        /// Mezők hozzárendelése a táblához
-        /// </summary>
-        /// <param name="table">Tábla amihez hozzárendelünk</param>
-        /// <param name="fields">Mezők, amiket a táblához rendelünk</param>
-        private void AddFieldToTable(in ITable table, in IField[] fields)
-        {
-            for (int i = 0; i < fields.Length; i++)
-            {
-                table.AddFieldInfo(fields[i]);
-            }
-        }
-
+        #endregion
     }
 }

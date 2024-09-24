@@ -1,10 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace SQLCreator.Model
 {
-    public class FileModel : ObservableObject
+    public class DataBaseModel : ObservableObject
     {
-        //elérési útvonal --> betöltésnél, kimenetnél
+        public DataBaseModel()
+        {
+            this.TxtFileName = new ObservableCollection<string>();
+            this.TablesInfo = new ObservableCollection<TableModel>();
+        }
+
         private string _outPutDestination;
         public string OutPutDestination
         {
@@ -33,6 +39,13 @@ namespace SQLCreator.Model
             set { SetProperty(ref _pdfPageNum, value); }
         }
 
+        private string _pdfLineNum;
+        public string PdfLineNum
+        {
+            get { return _pdfLineNum; }
+            set { _pdfLineNum = value; }
+        }
+
         private string _txtFileDestination;
         public string TxtFileDestination
         {
@@ -40,11 +53,25 @@ namespace SQLCreator.Model
             set { SetProperty(ref _txtFileDestination, value); }
         }
 
-        private string _txtFileName;
-        public string TxtFileName
+        private string _nameOfDb;
+        public string NameOfDb
+        {
+            get { return _nameOfDb; }
+            set { SetProperty(ref _nameOfDb, value); }
+        }
+
+        private ObservableCollection<string> _txtFileName;
+        public ObservableCollection<string> TxtFileName
         {
             get { return _txtFileName; }
             set { SetProperty(ref _txtFileName, value); }
         }
+
+        private ObservableCollection<TableModel> _tablesInfo;
+        public ObservableCollection<TableModel> TablesInfo
+        {
+            get { return _tablesInfo; }
+            set { SetProperty(ref _tablesInfo, value); }
+        }          
     }
 }

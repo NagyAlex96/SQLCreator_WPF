@@ -1,42 +1,41 @@
-﻿using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.parser;
+﻿using iTextSharp.text.pdf.parser;
+using iTextSharp.text.pdf;
 using Microsoft.Win32;
 using SQLCreator.Interfaces;
-using SQLCreator.Model;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Windows.Shapes;
+using SQLCreator.Model;
 using IOPath = System.IO.Path;
+using System.Runtime.Intrinsics.Arm;
+using SQLCreator.Assets;
 
-namespace SQLCreator.Assets
+namespace SQLCreator.Logic
 {
-    public class FileReader : IFileReader
+    public class FileReaderLogic : IFileReaderLogic
     {
-        public FileModel[] FileOpener()
+        public DataBaseModel[] FileOpener()
         {
             return DirectoryReader();
         }
 
-        public List<string[]> TxtReader(FileModel fModelValue)
+        public List<string[]> TxtReader(DataBaseModel dModelvalue)
         {
-            string[] destinations = fModelValue.TxtFileDestination.Split('\n');
+            string[] destinations = dModelvalue.TxtFileDestination.Split('\n');
             List<string[]> datas = new List<string[]>();
-
             for (int i = 0; i < destinations.Length; i++)
             {
-                datas.Add(File.ReadAllLines(destinations[i], Encoding.Latin1));
+                datas.Add(File.ReadAllLines(destinations[i], Encoding.UTF8)); 
                 datas[i][0] = datas[i][0].ToLower();
             }
             return datas;
         }
 
-        public string[] PdfReader(FileModel fModelValue)
+        public string[] PdfReader(DataBaseModel DBaseModelValue)
         {
-            string[] splittedPages = fModelValue.PdfPageNum.Split(';'); //pdf oldalak
+            string[] splittedPages = DBaseModelValue.PdfPageNum.Split(';'); //pdf oldalak
             string[] dataOnPages = new string[splittedPages.Length]; //pdf oldalokon található sorok
 
-            using (PdfReader reader = new PdfReader(fModelValue.PdfFileDestination))
+            using (PdfReader reader = new PdfReader(DBaseModelValue.PdfFileDestination))
             {
                 ITextExtractionStrategy Strategy = new LocationTextExtractionStrategy();
 
@@ -53,19 +52,19 @@ namespace SQLCreator.Assets
         /// Mappa beolvasását valósítja meg
         /// </summary>
         /// <returns></returns>
-        private FileModel[] DirectoryReader()
+        private DataBaseModel[] DirectoryReader()
         {
             OpenFolderDialog fDialog = new OpenFolderDialog();
             fDialog.Multiselect = true;
             fDialog.ShowDialog();
-            FileModel[] fModel = new FileModel[fDialog.FolderNames.Length];
+            DataBaseModel[] DBModelDatas = new DataBaseModel[fDialog.FolderNames.Length];
             int idx = 0;
 
             foreach (var item in GetFilesPathFromFolder(fDialog.FolderNames))
             {
-                fModel[idx++] = FModelConverter(item);
+                DBModelDatas[idx++] = DBModelConverter(item);
             }
-            return fModel;
+            return DBModelDatas;
         }
 
         /// <summary>
@@ -86,59 +85,60 @@ namespace SQLCreator.Assets
         }
 
         /// <summary>
-        /// FileModel típusá konvertáló
+        /// DataBaseModel típusá konvertáló
         /// </summary>
         /// <param name="files">Fájlok tömbje</param>
         /// <returns>Átkonvertált példány</returns>
-        private FileModel FModelConverter(string[] files)
+        private DataBaseModel DBModelConverter(string[] files)
         {
-            FileModel fModel = new FileModel();
+            DataBaseModel DBModel = new DataBaseModel();
             foreach (var item in files)
             {
                 if (IOPath.GetExtension(item) == ".txt")
                 {
-                    fModel.TxtFileDestination += (fModel.TxtFileName == null
+                    DBModel.TxtFileDestination += (DBModel.TxtFileDestination == null
                     ? $"{item}" //első item
                     : $"\n{item}"); //további itemek (feldolgozásnál és splittelésnél lesz szerepe)
 
-                    fModel.TxtFileName += (fModel.TxtFileName == null
-                    ? $"{IOPath.GetFileNameWithoutExtension(item)}" //első item
-                    : $"\n{IOPath.GetFileNameWithoutExtension(item)}");
+                    DBModel.TxtFileName.Add(IOPath.GetFileNameWithoutExtension(item));
                 }
                 else if (IOPath.GetExtension(item) == ".pdf")
                 {
-                    fModel.PdfFileDestination = item;
-                    fModel.PdfFileName = IOPath.GetFileNameWithoutExtension(item);
+                    DBModel.PdfFileDestination = item;
+                    DBModel.PdfFileName = IOPath.GetFileNameWithoutExtension(item);
                 }
             }
 
-            fModel.PdfPageNum = GetTablePageNum(fModel.PdfFileDestination).ToString();
-            fModel.OutPutDestination = IOPath.GetDirectoryName(fModel.PdfFileDestination);
+            (int, int) pdfvalues = GetTablePageNum(DBModel.PdfFileDestination);
+            DBModel.PdfPageNum = pdfvalues.Item1.ToString();
+            DBModel.PdfLineNum = pdfvalues.Item2.ToString();
+            DBModel.OutPutDestination = IOPath.GetDirectoryName(DBModel.PdfFileDestination);
 
-            return fModel;
+            return DBModel;
         }
 
         /// <summary>
-        /// Megkeresi, hogy hányadik oldalon van az adatbázisos feladat
+        /// Megkeresi, hogy hányadik oldalon van az adatbázisos feladat, és hogy hányadik sorban van a táblák rész
         /// </summary>
         /// <param name="path">Pdf fájl teljes elérési útvonala</param>
-        /// <returns><c>0</c> amennyiben nem találtuk meg a megfelelő oldalt, <c>különben</c> az az oldal, ahol megtalálható az adatbázis leírását</returns>
-        private int GetTablePageNum(string path)
+        /// <returns><c>-1, -1</c> amennyiben nem találta meg, különben a <c>oldalszám/sorszám</c> formában adja vissza</returns>
+        private (int, int) GetTablePageNum(string path)
         {
-            //TODO: 2x keressük meg a táblák részt. Ezt javítani kellene és máshova tenni
-            string[] SEARCHED_ITEM = { "Táblák:", "adattáblák", "tábla" }; //keresett szó
+            string[] SEARCHED_ITEM = { "Táblák:", "Tábla", "adattáblák szerkezete:"}; //keresett szó
             using (PdfReader reader = new PdfReader(path))
             {
                 ITextExtractionStrategy Strategy = new LocationTextExtractionStrategy();
+                int i = 0;
+                int index = -1;
 
-                int i = 1;
-                string[] aSplit = PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Split('\n'); //nem működik
-                var b = Algorithms.ContainsAny(aSplit, SEARCHED_ITEM);
-                while (i <= reader.NumberOfPages && !PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Split('\n').Any(x => SEARCHED_ITEM.Contains(x)))
+                do
                 {
                     i++;
-                }
-                return i < reader.NumberOfPages ? i : -1;
+                    //index = Array.FindIndex(PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Split('\n'), x => SEARCHED_ITEM.Contains(x.TrimEnd()));
+                    index = Algorithms.FindIndex(PdfTextExtractor.GetTextFromPage(reader, i, Strategy).Split('\n'), SEARCHED_ITEM);
+                } while (i <= reader.NumberOfPages && index < 0);
+
+                return index >= 0 ? (i, index) : (-1, -1);
             }
 
 
