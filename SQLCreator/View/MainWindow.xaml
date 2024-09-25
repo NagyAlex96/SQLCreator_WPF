@@ -26,6 +26,20 @@
 
     <Window.Resources>
         <Converter:BoolConverterForHiding x:Key="BoolToHideConverter"/>
+
+        <Style TargetType="ComboBox" x:Key="cboxToHide">
+            <Style.Triggers>
+                <!-- ChBox be van pipálva -->
+                <DataTrigger Binding="{Binding IsChecked, ElementName=chBoxToHide}" Value="True">
+                    <Setter Property="IsEnabled" Value="True"/>
+                </DataTrigger>                
+                <!-- ChBox nincs bepipálva -->
+                <DataTrigger Binding="{Binding IsChecked, ElementName=chBoxToHide}" Value="False">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="Button" x:Key="btnMenu">
             <Setter Property="Height" Value="50"/>
             <Setter Property="BorderBrush" Value="black"/>
@@ -196,7 +210,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="20*"/>
-                        <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0">
                         <TextBlock>
@@ -206,7 +219,7 @@
                     </Grid>
                     
                     <Grid Grid.Row="1">
-                        <ListBox ItemsSource="{Binding SelectedItem.TablesInfo}" Height="auto">
+                        <ListBox ItemsSource="{Binding SelectedItem.TablesInfo}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel>
@@ -215,7 +228,7 @@
                                         <Run Text="{Binding TableName}" Style="{StaticResource runDetails}"/>
                                         <LineBreak/>
                                         <Run Text="Prioritás: " Style="{StaticResource runHeader}"/>
-                                        <TextBox Text="{Binding Priority}" Style="{StaticResource tBoxDetails}"/>
+                                        <TextBox Text="{Binding Priority}" Style="{StaticResource tBoxDetails}" Width="50" HorizontalContentAlignment="Center"/>
                                         </TextBlock>
                                         <ListBox x:Name="cBoxFInfo" ItemsSource="{Binding FieldInfo}">
                                             <ListBox.ItemTemplate>
@@ -232,13 +245,13 @@
                                                         <CheckBox IsChecked="{Binding IsPrimaryKey}"/>
                                                         <LineBreak/>
                                                         <Run Text="Idegen kulcs-e: " Style="{StaticResource runHeader}"/>
-                                                        <CheckBox x:Name="cBoxToHide" IsChecked="{Binding IsForeignKey}"/>
+                                                        <CheckBox x:Name="chBoxToHide" IsChecked="{Binding IsForeignKey}"/>
                                                         <LineBreak/>
                                                         <Run Text="Hivatkozott tábla: " Style="{StaticResource runHeader}"/>
-                                                        <ComboBox ItemsSource="{Binding References}" SelectedValue="{Binding ReferenceTo}">
+                                                        <ComboBox ItemsSource="{Binding References}" SelectedValue="{Binding ReferenceTo}" Style="{StaticResource cboxToHide}">
                                                             <ComboBox.SelectedItem>
                                                                 <MultiBinding Converter="{StaticResource BoolToHideConverter}" Mode="TwoWay">
-                                                                    <Binding ElementName="cBoxToHide" Path="IsChecked"/>
+                                                                    <Binding ElementName="chBoxToHide" Path="IsChecked"/>
                                                                     <Binding Path="References"/>
                                                                     <Binding Path="ReferenceTo" Mode="TwoWay"/>
                                                                 </MultiBinding>

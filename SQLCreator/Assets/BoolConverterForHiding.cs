@@ -14,19 +14,16 @@ namespace SQLCreator.Assets
         {
             // Az első érték a CheckBox állapota (bool)
             bool isChecked = (bool)values[0];
-            // A második érték a ComboBox adatai, amikből az első elemet vesszük, ha létezik
             var referenceList = values[1] as IList<string>;
-            string selectedReference = values[2] as string;
 
-            bool ok = isChecked && referenceList != null && referenceList.Count > 0;
-
-            if (ok)
+            if (isChecked && referenceList != null && referenceList.Count > 0)
             {
-                selectedReference = referenceList[0];
+                values[2] = referenceList[0];
                 return referenceList[0]; // Az első elem visszaadása
             }
 
-            return selectedReference ?? string.Empty; // Ha nincs kiválasztva, visszaadunk null-t
+            values[2] = null;
+            return values[2]; // Ha nincs kiválasztva, visszaadunk null-t
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

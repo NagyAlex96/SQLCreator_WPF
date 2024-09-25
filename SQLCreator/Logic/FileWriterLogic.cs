@@ -22,7 +22,7 @@ namespace SQLCreator.Logic
         {
             using (this._sWriter = new StreamWriter($"{this._DBModel.OutPutDestination}\\{_DBModel.NameOfDb.TrimEnd()}.sql", false, Encoding.UTF8))
             {
-                this._DBModel.TablesInfo.OrderBy(x => x.TableName);
+                this._DBModel.TablesInfo = new ObservableCollection<TableModel>(this._DBModel.TablesInfo.OrderBy(x => x.Priority)); //csak az insert-nél legyen orderby?
                 CreateDBase();
                 CreateTables();
                 AlterTable();
@@ -84,7 +84,7 @@ namespace SQLCreator.Logic
             {
                 foreach (FieldModel fieldInfo in tableInfo.FieldInfo)
                 {
-                    if (fieldInfo.ReferenceTo != null)
+                    if (fieldInfo.IsForeignKey && fieldInfo.ReferenceTo != null)
                     {
                         this._sWriter.WriteLine($"ALTER TABLE {tableInfo.TableName}");
                         this._sWriter.WriteLine($"ADD CONSTRAINT fk_{fieldInfo.FieldName}");
@@ -119,7 +119,7 @@ namespace SQLCreator.Logic
                 this._sWriter.WriteLine(insert); //kiírjuk, hogy hova fognak bekerülni az adatok -> INSERT INTO {TÁBLA NEVE} (MEZŐ1, MEZŐ2...))
 
                 //egy táblán belül a mezőkhöz tartozó adatok száma egyenlő (MEZŐ1.Length = MEZŐ2.Length)
-                int maxLine = tableInfo.FieldInfo[0].FieldValue.Count; 
+                int maxLine = tableInfo.FieldInfo[0].FieldValue.Count;
                 for (int i = 0; i < maxLine; i++)
                 {
                     string data = "(";
