@@ -24,6 +24,87 @@
         <VM:MainWindowVM/>
     </Window.DataContext>
 
+    <Window.Triggers>
+        <!-- amennyiben rákattintunk a hozzáadottakra (label) -->
+        <EventTrigger RoutedEvent="MouseLeftButtonDown" SourceName="lbAdded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <!-- feldolgozottak megjelenítés  -->
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="dGridProcessed" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Visible</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="lbProcessed" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Visible</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+
+                    <!-- hozzáadottak elrejtés -->
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="dGridAdded" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Hidden</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="lbAdded" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Hidden</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+
+        <!-- amennyiben rákattintunk a feldolgozottakra (label) -->
+        <EventTrigger RoutedEvent="MouseLeftButtonDown" SourceName="lbProcessed">
+            <BeginStoryboard>
+                <Storyboard>
+                    <!-- hozzáadottak megjelenítése -->
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="dGridAdded" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Visible</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="lbAdded" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Visible</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+
+                    <!-- feldolgozottak elrejtése  -->
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="dGridProcessed" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Hidden</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="lbProcessed" Storyboard.TargetProperty="Visibility">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <Visibility>Hidden</Visibility>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+
+    </Window.Triggers>
+
     <Window.Resources>
         <Converter:BoolConverterForHiding x:Key="BoolToHideConverter"/>
 
@@ -32,7 +113,7 @@
                 <!-- ChBox be van pipálva -->
                 <DataTrigger Binding="{Binding IsChecked, ElementName=chBoxToHide}" Value="True">
                     <Setter Property="IsEnabled" Value="True"/>
-                </DataTrigger>                
+                </DataTrigger>
                 <!-- ChBox nincs bepipálva -->
                 <DataTrigger Binding="{Binding IsChecked, ElementName=chBoxToHide}" Value="False">
                     <Setter Property="IsEnabled" Value="False"/>
@@ -57,24 +138,7 @@
             <Setter Property="BorderBrush" Value="Black"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="Wheat"/>
-        </Style>
-
-        <Style TargetType="TextBlock" x:Key="tBlockDetails">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="Foreground" Value="Red"/>
-        </Style>
-        <Style TargetType="TextBox" x:Key="tBoxDetails">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="Foreground" Value="Red"/>
-        </Style>
-
-        <Style TargetType="Run" x:Key="runDetails">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="Foreground" Value="Red"/>
-        </Style>
-        <Style TargetType="Run" x:Key="runHeader">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
 
     </Window.Resources>
@@ -142,176 +206,140 @@
             <Grid Width="1280" Height="720">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="8*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width=".5*"/>
+                    <ColumnDefinition Width="6*"/>
+                    <ColumnDefinition Width=".5*"/>
                     <ColumnDefinition Width="12*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="8*"/>
+                    <ColumnDefinition Width=".5*"/>
                 </Grid.ColumnDefinitions>
-
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="9*"/>
                 </Grid.RowDefinitions>
 
-                <Grid Background="CornflowerBlue" Grid.Column="0" Grid.RowSpan="2"/>
-                <Grid Background="CornflowerBlue" Grid.Column="2" Grid.RowSpan="2"/>
-                <Grid Background="CornflowerBlue" Grid.Column="4" Grid.RowSpan="2"/>
+                <!-- Sorok közötti kitöltés -->
+                <Grid Background="CornflowerBlue" Grid.RowSpan="2" Grid.Column="0"/>
+                <Grid Background="CornflowerBlue" Grid.RowSpan="2" Grid.Column="2"/>
+                <Grid Background="CornflowerBlue" Grid.RowSpan="2" Grid.Column="4"/>
 
-                <Label Style="{StaticResource lbListTitle}" Grid.Column="1" Grid.Row="0" Content="Hozzáadott"/>
-
-                <Label Style="{StaticResource lbListTitle}" Grid.Column="5" Grid.Row="0" Content="Feldolgozott"/>
-                <Label Style="{StaticResource lbListTitle}" Grid.Column="3" Grid.Row="0" Content="Adatok"/>
-
-                <!-- bal -->
-                <ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AddedFiles}" SelectedItem="{Binding SelectedItem}" BorderBrush="Black" BorderThickness="1 0 1 1">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="Black" BorderThickness="2">
-
-                                <StackPanel>
-                                    <TextBlock>
-                                        <Run Text="Pdf fájl neve: " Style="{StaticResource runHeader}"/>
-                                        <Run Text="{Binding PdfFileName}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-
-                                    <TextBlock>
-                                        <Run Text="Pdf oldalszám: " Style="{StaticResource runHeader}"/>
-                                        <Run Text="{Binding PdfPageNum}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-
-                                    <TextBlock>
-                                        <Run Text="Txt fájlok neve" Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                        <ItemsControl ItemsSource="{Binding TxtFileName}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}" Style="{StaticResource tBlockDetails}"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </TextBlock>
-
-                                    <TextBlock>
-                                        <Run Text="Mentés helye: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                        <Run Text="{Binding OutPutDestination}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
-
-
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-
-                <Grid Grid.Row="1" Grid.Column="3">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="20*"/>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <TextBlock>
-                        <Run Text="Adatbázis neve: " Style="{StaticResource runHeader}"/>
-                        <Run Text="{Binding SelectedItem.NameOfDb}" Style="{StaticResource runDetails}"/>
-                        </TextBlock>
-                    </Grid>
-                    
-                    <Grid Grid.Row="1">
-                        <ListBox ItemsSource="{Binding SelectedItem.TablesInfo}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <TextBlock>
-                                        <Run Text="Tábla neve: " Style="{StaticResource runHeader}"/>
-                                        <Run Text="{Binding TableName}" Style="{StaticResource runDetails}"/>
-                                        <LineBreak/>
-                                        <Run Text="Prioritás: " Style="{StaticResource runHeader}"/>
-                                        <TextBox Text="{Binding Priority}" Style="{StaticResource tBoxDetails}" Width="50" HorizontalContentAlignment="Center"/>
-                                        </TextBlock>
-                                        <ListBox x:Name="cBoxFInfo" ItemsSource="{Binding FieldInfo}">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel>
-                                                        <TextBlock>
-                                                        <Run Text="Mező neve: " Style="{StaticResource runHeader}"/>
-                                                        <Run Text="{Binding FieldName}" Style="{StaticResource runDetails}"/>
-                                                        <LineBreak/>
-                                                        <Run Text="Mező típusa: " Style="{StaticResource runHeader}"/>
-                                                        <Run Text="{Binding TypeOfField}" Style="{StaticResource runDetails}"/>
-                                                        <LineBreak/>
-                                                        <Run Text="Elsődleges kulcs-e: " Style="{StaticResource runHeader}"/>
-                                                        <CheckBox IsChecked="{Binding IsPrimaryKey}"/>
-                                                        <LineBreak/>
-                                                        <Run Text="Idegen kulcs-e: " Style="{StaticResource runHeader}"/>
-                                                        <CheckBox x:Name="chBoxToHide" IsChecked="{Binding IsForeignKey}"/>
-                                                        <LineBreak/>
-                                                        <Run Text="Hivatkozott tábla: " Style="{StaticResource runHeader}"/>
-                                                        <ComboBox ItemsSource="{Binding References}" SelectedValue="{Binding ReferenceTo}" Style="{StaticResource cboxToHide}">
-                                                            <ComboBox.SelectedItem>
-                                                                <MultiBinding Converter="{StaticResource BoolToHideConverter}" Mode="TwoWay">
-                                                                    <Binding ElementName="chBoxToHide" Path="IsChecked"/>
-                                                                    <Binding Path="References"/>
-                                                                    <Binding Path="ReferenceTo" Mode="TwoWay"/>
-                                                                </MultiBinding>
-                                                            </ComboBox.SelectedItem>
-                                                        </ComboBox>
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                    </Grid>
+                <!-- hozzáadott/feldolgozott fájlok FELIRATA -->
+                <Grid Grid.Row="0" Grid.Column="1" Background="Wheat">
+                    <Label x:Name="lbAdded" Content="Hozzáadott" Style="{StaticResource lbListTitle}" Visibility="Visible" ToolTip="Váltás a feldolgozott fájlokra"/>
+                    <Label x:Name="lbProcessed" Content="Feldolgozott" Style="{StaticResource lbListTitle}" Visibility="Hidden" ToolTip="Váltás a hozzáadott fájlokra"/>
                 </Grid>
 
-                <ListBox Grid.Row="1" Grid.Column="5" ItemsSource="{Binding ProcessedFiles}" BorderBrush="Black" BorderThickness="1 0 1 1">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="Black" BorderThickness="2">
-                                <StackPanel CanHorizontallyScroll="False">
+                <!-- hozzáadott/feldolgozott fájlok -->
+                <Grid Grid.Row="1" Grid.Column="1">
 
-                                    <TextBlock>
-                                        <Run Text="Pdf fájl neve: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                        <Run Text="{Binding PdfFileName}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
+                    <!-- hozzáadott fájlok -->
+                    <DataGrid x:Name="dGridAdded" GridLinesVisibility="None" VerticalAlignment="Top" ItemsSource="{Binding AddedFiles}" AutoGenerateColumns="False" CanUserAddRows="False" Visibility="Visible" SelectedItem="{Binding SelectedItem}">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="PDF fájl neve" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="Black" BorderThickness="1">
+                                            <TextBlock Text="{Binding PdfFileName}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                    <TextBlock>
-                                        <Run Text="Pdf oldalszám: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                        <Run Text="{Binding PdfPageNum}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
+                            <DataGridTemplateColumn Header="Txt fájlok" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="Black" BorderThickness="1">
+                                            <ListBox ItemsSource="{Binding TxtFileName}" IsHitTestVisible="False" BorderBrush="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
 
-                                    <TextBlock>
-                                        <Run Text="Txt fájlok neve: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                        <ItemsControl ItemsSource="{Binding TxtFileName}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}" Style="{StaticResource tBlockDetails}"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </TextBlock>
+                    <!-- feldolgozott fájlok -->
+                    <DataGrid x:Name="dGridProcessed" ItemsSource="{Binding ProcessedFiles}" AutoGenerateColumns="False" CanUserAddRows="False" Visibility="Hidden">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Adatbázis neve" Width="auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding NameOfDb}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                    <TextBlock>
-                                        <Run Text="Mentés helye: " Style="{StaticResource runHeader}"/>
-                                        <LineBreak/>
-                                        <Run Text="{Binding OutPutDestination}" Style="{StaticResource runDetails}"/>
-                                    </TextBlock>
+                            <DataGridTemplateColumn Header="Mentés helye" Width="auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding OutPutDestination}" VerticalAlignment="Center" HorizontalAlignment="Center" MouseRightButtonDown="TextBlock_MouseRightButtonDown"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
 
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Label Content="Adatok" Grid.Column="3" Style="{StaticResource lbListTitle}"/>
+                <Grid Grid.Row="1" Grid.Column="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.2*"/>
+                        <RowDefinition Height=".5*"/>
+                        <RowDefinition Height="12*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Grid Grid.Row="1">
+                        <TextBlock Text="Adatbázis neve:" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="18"/>
+                        <TextBox Text="{Binding SelectedItem.NameOfDb}" FontSize="16" VerticalAlignment="Top" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="Red" HorizontalAlignment="Center" Margin="190 1 0 0"/>
+                    </Grid>
+                    
+                    <Grid Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding SelectedItem.TablesInfo}" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Tábla neve" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TableName}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <DataGridTemplateColumn Header="Prioritás" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Priority}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
+                                <DataGridTemplateColumn Header="Mező információk" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <DataGrid ItemsSource="{Binding FieldInfo}" AutoGenerateColumns="False">
+                                                <DataGrid.Columns>
+                                                    <DataGridTemplateColumn Header="Mezők">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding FieldName}"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    
+                                                    <DataGridTemplateColumn Header="Típusa">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <ComboBox ItemsSource="{x:Static Converter:FieldTypes.PossibleTypesOfField}"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+                    </Grid>
+                </Grid>
             </Grid>
         </Viewbox>
     </Grid>

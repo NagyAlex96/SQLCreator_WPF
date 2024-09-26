@@ -60,6 +60,13 @@ namespace SQLCreator.Model
             set { SetProperty(ref _nameOfDb, value); }
         }
 
+        private bool _isConverted;
+        public bool IsConverted
+        {
+            get { return _isConverted; }
+            set { SetProperty(ref _isConverted, value); }
+        }
+
         private ObservableCollection<string> _txtFileName;
         public ObservableCollection<string> TxtFileName
         {

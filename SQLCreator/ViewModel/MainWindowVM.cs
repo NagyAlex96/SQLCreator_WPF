@@ -56,6 +56,7 @@ namespace SQLCreator.ViewModel
             {
                 this._fileWriterLogic = new FileWriterLogic(this.SelectedItem);
                 this._fileWriterLogic.SQLWriter();
+                this.SelectedItem.IsConverted = true;
                 this._fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, SelectedItem);
             }
         }
