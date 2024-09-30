@@ -271,7 +271,7 @@ namespace SQLCreator.Logic
                     {
                         fieldModels[i].IsPrimaryKey = true;
                     }
-                    fieldModels[i].TypeOfField = (fieldModels[i].IsPrimaryKey ? FieldTypes.Setup(pdfDataOnPage[j]) + " NOT NULL" : FieldTypes.Setup(pdfDataOnPage[j]));
+                    fieldModels[i].TypeOfField = FieldTypes.SetFieldType(pdfDataOnPage[j]);
                     j++;
                 }
             }

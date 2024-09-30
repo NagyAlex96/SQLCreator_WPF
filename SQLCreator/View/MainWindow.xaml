@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:SQLCreator"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:VM ="clr-namespace:SQLCreator.ViewModel"
-        xmlns:Converter ="clr-namespace:SQLCreator.Assets"
+        xmlns:Converter ="clr-namespace:SQLCreator.Assets.Converter"
+        xmlns:Assets ="clr-namespace:SQLCreator.Assets"
         mc:Ignorable="d"
         FontFamily="Times New Roman"
         FontSize="14"
@@ -106,21 +107,12 @@
     </Window.Triggers>
 
     <Window.Resources>
-        <Converter:BoolConverterForHiding x:Key="BoolToHideConverter"/>
+        <Converter:ForHidingConverter x:Key="HideConverter"/>
 
-        <Style TargetType="ComboBox" x:Key="cboxToHide">
-            <Style.Triggers>
-                <!-- ChBox be van pipálva -->
-                <DataTrigger Binding="{Binding IsChecked, ElementName=chBoxToHide}" Value="True">
-                    <Setter Property="IsEnabled" Value="True"/>
-                </DataTrigger>
-                <!-- ChBox nincs bepipálva -->
-                <DataTrigger Binding="{Binding IsChecked, ElementName=chBoxToHide}" Value="False">
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-            </Style.Triggers>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
-
+        
         <Style TargetType="Button" x:Key="btnMenu">
             <Setter Property="Height" Value="50"/>
             <Setter Property="BorderBrush" Value="black"/>
@@ -285,51 +277,96 @@
                         <RowDefinition Height=".5*"/>
                         <RowDefinition Height="12*"/>
                     </Grid.RowDefinitions>
-                    
+
                     <Grid Grid.Row="1">
                         <TextBlock Text="Adatbázis neve:" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="18"/>
                         <TextBox Text="{Binding SelectedItem.NameOfDb}" FontSize="16" VerticalAlignment="Top" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="Red" HorizontalAlignment="Center" Margin="190 1 0 0"/>
                     </Grid>
-                    
+
                     <Grid Grid.Row="2">
-                        <DataGrid ItemsSource="{Binding SelectedItem.TablesInfo}" AutoGenerateColumns="False">
+                        <!-- Táblák -->
+                        <DataGrid ItemsSource="{Binding SelectedItem.TablesInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Tábla neve" Width="*">
+                                <DataGridTemplateColumn Header="Tábla neve" Width="auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding TableName}"/>
+                                            <TextBlock Text="{Binding TableName}" VerticalAlignment="Center"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 
-                                <DataGridTemplateColumn Header="Prioritás" Width="*">
+                                <!-- Prioritás -->
+                                <DataGridTemplateColumn Header="Prioritás" Width="auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Priority}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <TextBox Text="{Binding Priority, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="Mező információk" Width="*">
+                                <DataGridTemplateColumn Width="*">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Mezőinformációk" HorizontalAlignment="Left"/>
+                                    </DataGridTemplateColumn.Header>
+                                    
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <DataGrid ItemsSource="{Binding FieldInfo}" AutoGenerateColumns="False">
+                                            <DataGrid ItemsSource="{Binding FieldInfo}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="True" CanUserSortColumns="True">
                                                 <DataGrid.Columns>
-                                                    <DataGridTemplateColumn Header="Mezők">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding FieldName}"/>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
                                                     
-                                                    <DataGridTemplateColumn Header="Típusa">
+                                                    <!-- Elérhető mezők -->
+                                                    <DataGridTemplateColumn Header="Mezők" Width="*">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
-                                                                <ComboBox ItemsSource="{x:Static Converter:FieldTypes.PossibleTypesOfField}"/>
+                                                                <TextBlock Text="{Binding FieldName}" VerticalAlignment="Center"/>
                                                             </DataTemplate>
                                                         </DataGridTemplateColumn.CellTemplate>
                                                     </DataGridTemplateColumn>
+
+                                                    <!-- mezőtípus -->
+                                                    <DataGridTemplateColumn Header="Típusa" Width="*">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <ComboBox ItemsSource="{Binding TypesOfField}" SelectedItem="{Binding TypeOfField, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
+                                                    <!-- elsődlegeskulcs-e -->
+                                                    <DataGridTemplateColumn Header="Elsődlegeskulcs" Width="*">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox IsChecked="{Binding IsPrimaryKey, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
+                                                    <!-- idegenkulcs-e -->
+                                                    <DataGridTemplateColumn Header="Idegenkulcs" Width="*">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox x:Name="chBoxFKey" IsChecked="{Binding IsForeignKey, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
+                                                    <!-- Összes hivatkozás -->
+                                                    <DataGridTemplateColumn Header="Hivatkozás" Width="*">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <ComboBox Name="cmbBoxRef" IsEnabled="{Binding IsForeignKey}" ItemsSource="{Binding References}" SelectedValue="{Binding ReferenceTo, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center">
+                                                                    <ComboBox.SelectedItem>
+                                                                        <MultiBinding Converter="{StaticResource HideConverter}">
+                                                                            <Binding Path="IsForeignKey"/>
+                                                                            <Binding Path="References"/>
+                                                                            <Binding Path="ReferenceTo"/>
+                                                                        </MultiBinding>
+                                                                    </ComboBox.SelectedItem>
+                                                                </ComboBox>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
                                                 </DataGrid.Columns>
                                             </DataGrid>
                                         </DataTemplate>

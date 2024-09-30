@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace SQLCreator.Assets
+namespace SQLCreator.Assets.Converter
 {
-    public class BoolConverterForHiding : IMultiValueConverter
+    public class ForHidingConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -31,6 +31,5 @@ namespace SQLCreator.Assets
             // A ConvertBack funkció itt csak a kiválasztott elem frissítésére használható
             return new object[] { Binding.DoNothing, Binding.DoNothing, value };
         }
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SQLCreator.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,53 +7,37 @@ using System.Threading.Tasks;
 
 namespace SQLCreator.Assets
 {
-    public static class FieldTypes
+    public class FieldTypes
     {
         public static readonly string DEFAULT_VALUE = "VARCHAR(64)";
+        public static List<string> TypeOfFieldsValues =>PossibleTypesOfField.Select(x=>x.Value).ToList();
 
         /// <summary>
         /// Egy mező lehetséges típusa
         /// </summary>
         static readonly Dictionary<string, string> PossibleTypesOfField = new Dictionary<string, string>
         {
-            { "(szám)","INT NOT NULL"},
-            { "(szöveg)","VARCHAR(64) NOT NULL"},
-            { "(logikai)","BOOLEAN NOT NULL"},
-            { "(dátum)","DATE NOT NULL"},
-            {"(számláló)", "INT AUTO_INCREMENT" }
+            { "(szám)","INT"},
+            {"(számláló)", "INT AUTO_INCREMENT" },
+            {"tizedes jegy pontosan", "DOUBLE" },
+            { "(szöveg)","VARCHAR(64)"},
+            { "(logikai)","BOOLEAN"},
+            { "(dátum)","DATE"},
         };
 
-        public static string Setup(string line)
+        /// <summary>
+        /// Beállítja a mező típusát
+        /// </summary>
+        /// <param name="line">Egy sor adat</param>
+        /// <returns></returns>
+        public static string SetFieldType(string line)
         {
-            if (line.Contains("(szám)"))
+            string matchingKey = PossibleTypesOfField.Keys.FirstOrDefault(key => line.Contains(key));
+            if (!string.IsNullOrEmpty(matchingKey))
             {
-                if (line.Contains("tizedes jegy pontosan"))
-                {
-                    return "DOUBLE";
-                }
-                else
-                {
-                    return "INT";
-                }
+                return PossibleTypesOfField[matchingKey];
             }
-            else if (line.Contains("(logikai)"))
-            {
-                return "BOOLEAN";
-            }
-            else if (line.Contains("(dátum)"))
-            {
-                return "DATE";
-            }
-            else if (line.Contains("(számláló)"))
-            {
-                return "INT AUTO_INCREMENT";
-            }
-            else
-            {
-                return "VARCHAR(64)";
-            }
-
-
+            return DEFAULT_VALUE;
         }
     }
 }

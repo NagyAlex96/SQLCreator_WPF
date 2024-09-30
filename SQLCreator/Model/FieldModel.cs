@@ -1,14 +1,19 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.VisualBasic.FileIO;
+using SQLCreator.Assets;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace SQLCreator.Model
 {
     public class FieldModel : ObservableObject
     {
+
         public FieldModel()
         {
             this.FieldValue = new ObservableCollection<string>();
             this.References = new ObservableCollection<string>();
+            this.TypesOfField = new ObservableCollection<string>(FieldTypes.TypeOfFieldsValues.ToList());
         }
 
         private string _fieldName;
@@ -22,7 +27,17 @@ namespace SQLCreator.Model
         public string TypeOfField
         {
             get { return _typeOfField; }
-            set { SetProperty(ref _typeOfField, value); }
+            set
+            {
+                SetProperty(ref _typeOfField, value);
+            }
+        }
+
+        private ObservableCollection<string> _typesOfField;
+        public ObservableCollection<string> TypesOfField
+        {
+            get { return _typesOfField; }
+            set { SetProperty(ref _typesOfField, value); }
         }
 
         private bool _isPrimaryKey;
@@ -43,7 +58,11 @@ namespace SQLCreator.Model
         public string ReferenceTo
         {
             get { return _referenceTo; }
-            set { SetProperty(ref _referenceTo, value); }
+            set
+            {
+                ;
+                SetProperty(ref _referenceTo, value);
+            }
         }
 
         private ObservableCollection<string> _references;
@@ -53,11 +72,6 @@ namespace SQLCreator.Model
             set { SetProperty(ref _references, value); }
         }
 
-        private ObservableCollection<string> _fieldValue;
-        public ObservableCollection<string> FieldValue
-        {
-            get { return _fieldValue; }
-            set { SetProperty(ref _fieldValue, value); }
-        }
+        public ObservableCollection<string> FieldValue { get; set; }
     }
 }

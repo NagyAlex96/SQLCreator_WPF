@@ -63,16 +63,20 @@ namespace SQLCreator.Logic
         private string FieldNamesAndPKeyWriter(ObservableCollection<FieldModel> fields)
         {
             string outPut = "";
-
+            string pk = "";
             foreach (FieldModel item in fields)
             {
+                if(item.IsPrimaryKey)
+                {
+                    pk += $"\t\tPRIMARY KEY ({item.FieldName})\n";
+                    outPut += $"\t{item.FieldName} {item.TypeOfField} NOT NULL,\n";
+                    continue;
+                }
                 outPut += $"\t{item.FieldName} {item.TypeOfField},\n";
             }
-            FieldModel pk = fields.Where(x => x.IsPrimaryKey).FirstOrDefault();
-            outPut += $"\t\tPRIMARY KEY ({pk.FieldName})\n";
 
 
-            return outPut;
+            return outPut + pk;
         }
 
         /// <summary>
