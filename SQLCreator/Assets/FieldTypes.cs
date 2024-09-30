@@ -17,10 +17,12 @@ namespace SQLCreator.Assets
         /// </summary>
         static readonly Dictionary<string, string> PossibleTypesOfField = new Dictionary<string, string>
         {
-            { "(szám)","INT"},
             {"(számláló)", "INT AUTO_INCREMENT" },
+            { "(szám)","INT"},
             {"tizedes jegy pontosan", "DOUBLE" },
             { "(szöveg)","VARCHAR(64)"},
+            { "VARCHAR(128)","VARCHAR(128)"}, //extra
+            { "VARCHAR(256)","VARCHAR(256)"}, //extra
             { "(logikai)","BOOLEAN"},
             { "(dátum)","DATE"},
         };
