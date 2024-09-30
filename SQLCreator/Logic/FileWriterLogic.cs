@@ -91,7 +91,7 @@ namespace SQLCreator.Logic
                     if (fieldInfo.IsForeignKey && fieldInfo.ReferenceTo != null)
                     {
                         this._sWriter.WriteLine($"ALTER TABLE {tableInfo.TableName}");
-                        this._sWriter.WriteLine($"ADD CONSTRAINT fk_{fieldInfo.FieldName}");
+                        this._sWriter.WriteLine($"ADD CONSTRAINT fk_{tableInfo.TableName}_{fieldInfo.ReferenceTo.Split(' ')[0]}_{fieldInfo.FieldName}");
                         this._sWriter.WriteLine($"FOREIGN KEY ({fieldInfo.FieldName}) REFERENCES {fieldInfo.ReferenceTo};\n");
                     }
                 }
