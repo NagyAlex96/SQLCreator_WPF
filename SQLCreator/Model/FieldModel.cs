@@ -3,6 +3,7 @@ using Microsoft.VisualBasic.FileIO;
 using SQLCreator.Assets;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace SQLCreator.Model
 {
@@ -79,5 +80,7 @@ namespace SQLCreator.Model
         }
 
         public ObservableCollection<string> FieldValue { get; set; }
+
+        public static Encoding CharSet { get; set; }
     }
 }

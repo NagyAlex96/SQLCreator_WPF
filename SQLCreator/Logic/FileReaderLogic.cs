@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using SQLCreator.Model;
 using SQLCreator.Assets;
+using Ude;
 using IOPath = System.IO.Path;
 
 namespace SQLCreator.Logic
@@ -31,8 +32,9 @@ namespace SQLCreator.Logic
             List<string[]> datas = new List<string[]>();
             for (int i = 0; i < destinations.Length; i++)
             {
-                datas.Add(File.ReadAllLines(destinations[i], Encoding.UTF8)); 
-                datas[i][0] = datas[i][0].ToLower(); 
+                var encoding = Encoding.GetEncoding(DetectFileEncoding(destinations[i]));
+                datas.Add(File.ReadAllLines(destinations[i], encoding));
+                datas[i][0] = datas[i][0].ToLower();
             }
             return datas;
         }
@@ -131,7 +133,7 @@ namespace SQLCreator.Logic
         /// <returns><c>-1, -1</c> amennyiben nem találta meg, különben a <c>oldalszám/sorszám</c> formában adja vissza</returns>
         private (int, int) GetTablePageNum(string path)
         {
-            string[] SEARCHED_ITEM = { "Táblák:", "Tábla", "adattáblák szerkezete:"}; //keresett szó
+            string[] SEARCHED_ITEM = { "Táblák:", "Tábla", "adattáblák szerkezete:" }; //keresett szó
             using (PdfReader reader = new PdfReader(path))
             {
                 ITextExtractionStrategy Strategy = new LocationTextExtractionStrategy();
@@ -149,6 +151,18 @@ namespace SQLCreator.Logic
             }
 
 
+        }
+
+        private static string DetectFileEncoding(string filePath)
+        {
+            using (FileStream fs = File.OpenRead(filePath))
+            {
+                CharsetDetector cdet = new CharsetDetector();
+                cdet.Feed(fs);
+                cdet.DataEnd();
+
+                return cdet.Charset;
+            }
         }
     }
 }
