@@ -60,7 +60,7 @@ namespace SQLCreator.Logic
             //fieldValue-k beállítása
             for (int i = 0; i < tableModels[0].FieldInfo[0].FieldValue.Count; i++)
             {
-                fModel.FieldValue.Add($"{++i}");
+                fModel.FieldValue.Add($"{(i+1)}");
             }
 
             //referenciák beállítása
@@ -334,13 +334,14 @@ namespace SQLCreator.Logic
         /// <returns>Mezőkhöz tartozó név + adatok</returns>
         private ObservableCollection<FieldModel> TxtDataProcessing(in string[] txtFileLines)
         {
-            string[] fieldData = txtFileLines[0].Split('\t'); //kezdetben a 0-ik sorból kiszedjük a mezők neveit
+            char separator = GetSeparatorChar(txtFileLines[0]);
+            string[] fieldData = txtFileLines[0].Split(separator); //kezdetben a 0-ik sorból kiszedjük a mezők neveit
             ObservableCollection<FieldModel> fieldModels = new ObservableCollection<FieldModel>();
             SetFieldNames(fieldModels, fieldData);
 
             for (int i = 1; i < txtFileLines.Length; i++)
             {
-                fieldData = txtFileLines[i].Split('\t'); //itt már nem a mezők nevei lesznek, hanem a hozzájuk tartozó adatok
+                fieldData = txtFileLines[i].Split(separator); //itt már nem a mezők nevei lesznek, hanem a hozzájuk tartozó adatok
                 SetFieldValues(fieldModels, fieldData);
             }
 
@@ -386,6 +387,16 @@ namespace SQLCreator.Logic
             }
         }
 
+        private char GetSeparatorChar(in string line)
+        {
+            int i = 1;
+            while (i<line.Length && char.IsLetterOrDigit(line[i]) && char.IsLetterOrDigit(line[i-1]))
+            {
+                i++;
+            }
+
+            return line[i];
+        }
         #endregion
     }
 }
