@@ -18,7 +18,7 @@ namespace SQLCreator.Logic
 
         public void Modify(DataBaseModel fModel)
         {
-            //TODO
+            //TODO módosítási oldal megírása
             //ModifyPage Modify = new ModifyPage(fModel, true);
             //Modify.ShowDialog();
         }
