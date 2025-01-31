@@ -27,6 +27,7 @@ namespace SQLCreator.Logic
 
         public List<string[]> TxtReader(DataBaseModel dModelvalue)
         {
+            //TODO: speciális karaktert ismerje fel (ez lesz a szeparátor)
             string[] destinations = dModelvalue.TxtFileDestination.Split('\n');
             List<string[]> datas = new List<string[]>();
             for (int i = 0; i < destinations.Length; i++)
