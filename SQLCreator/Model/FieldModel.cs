@@ -8,7 +8,6 @@ namespace SQLCreator.Model
 {
     public class FieldModel : ObservableObject
     {
-
         public FieldModel()
         {
             this.FieldValue = new ObservableCollection<string>();
@@ -38,6 +37,13 @@ namespace SQLCreator.Model
         {
             get { return _typesOfField; }
             set { SetProperty(ref _typesOfField, value); }
+        }
+
+        private bool _isExtraField;
+        public bool IsExtraField
+        {
+            get { return _isExtraField; }
+            set { SetProperty(ref _isExtraField, value); }
         }
 
         private bool _isPrimaryKey;

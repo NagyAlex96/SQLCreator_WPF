@@ -5,14 +5,21 @@ using SQLCreator.Interfaces;
 using System.IO;
 using System.Text;
 using SQLCreator.Model;
-using IOPath = System.IO.Path;
-using System.Runtime.Intrinsics.Arm;
 using SQLCreator.Assets;
+using IOPath = System.IO.Path;
 
 namespace SQLCreator.Logic
 {
     public class FileReaderLogic : IFileReaderLogic
     {
+        //TODO: kódolás a 05. esetén (txt beolvasása)
+        //TODO: extra ID oszlop beszúrása, amennyiben szükséges + hiba van, mert valamikor 2x is bekerül a gridview-ba
+        //TODO: kód refactorálás
+        //TODO: kód átnézése, hogy minden meg lett-e valósítva
+        //TODO: már megszerkeztett fájlok tárolása későbbre (extra mező, hogy meg lehessen különböztetni őket -> beolvasás után hozzárendeljük)
+        //TODO: mind feldolgozása (gomb) helyett a szerkesztettek feldolgozása
+        //TODO: metódusok/függvények leírásának megírása
+
         public DataBaseModel[] FileOpener()
         {
             return DirectoryReader();
@@ -25,7 +32,7 @@ namespace SQLCreator.Logic
             for (int i = 0; i < destinations.Length; i++)
             {
                 datas.Add(File.ReadAllLines(destinations[i], Encoding.UTF8)); 
-                datas[i][0] = datas[i][0].ToLower();
+                datas[i][0] = datas[i][0].ToLower(); 
             }
             return datas;
         }

@@ -10,6 +10,16 @@ namespace SQLCreator.Model
             this.FieldInfo = new ObservableCollection<FieldModel>();
         }
 
+        private bool _isExtraFieldNeeded;
+        public bool IsExtraFieldNeeded
+        {
+            get { return _isExtraFieldNeeded; }
+            set 
+            { 
+                SetProperty(ref _isExtraFieldNeeded, value); 
+            }
+        }
+
         private string _tableName;
         public string TableName
         {

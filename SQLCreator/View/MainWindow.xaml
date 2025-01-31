@@ -108,11 +108,13 @@
 
     <Window.Resources>
         <Converter:ForHidingConverter x:Key="HideConverter"/>
+        <Converter:IsReadonlyConverter x:Key="ReadonlyConverter"/>
+        <Converter:ExtraFieldConverter x:Key="ExtraFieldConverter"/>
 
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
-        
+
         <Style TargetType="Button" x:Key="btnMenu">
             <Setter Property="Height" Value="50"/>
             <Setter Property="BorderBrush" Value="black"/>
@@ -140,7 +142,6 @@
             <ColumnDefinition Width="1.065*"/>
             <ColumnDefinition Width="8*"/>
         </Grid.ColumnDefinitions>
-
 
         <!-- oldalsó menü -->
         <Viewbox Grid.Column="0" HorizontalAlignment="Left">
@@ -278,14 +279,19 @@
                         <RowDefinition Height="12*"/>
                     </Grid.RowDefinitions>
 
+                    <!-- Adatbázis neve -->
                     <Grid Grid.Row="1">
-                        <TextBlock Text="Adatbázis neve:" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="18"/>
-                        <TextBox Text="{Binding SelectedItem.NameOfDb}" FontSize="16" VerticalAlignment="Top" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="Red" HorizontalAlignment="Center" Margin="190 1 0 0"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width=".5*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Adatbázis neve:" VerticalAlignment="Top" HorizontalAlignment="Right" FontSize="18" Grid.Column="0"/>
+                        <TextBox Text="{Binding SelectedItem.NameOfDb}" FontSize="16" VerticalAlignment="Top" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="Red" HorizontalAlignment="Left" Grid.Column="1"/>
                     </Grid>
 
                     <Grid Grid.Row="2">
                         <!-- Táblák -->
-                        <DataGrid ItemsSource="{Binding SelectedItem.TablesInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
+                        <DataGrid x:Name="Tables" ItemsSource="{Binding SelectedItem.TablesInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Tábla neve" Width="auto">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -294,7 +300,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                
+
                                 <!-- Prioritás -->
                                 <DataGridTemplateColumn Header="Prioritás" Width="auto">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -304,36 +310,54 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
+                                <!-- Extra mező, amennyiben kell -->
+                                <DataGridTemplateColumn Width="auto">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Új mező" ToolTip="Új mező / elsődleges kulcs hozzáadása"/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox x:Name="ChBoxExtraFieldNeeded" IsChecked="{Binding IsExtraFieldNeeded, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <MultiBinding Converter="{StaticResource ExtraFieldConverter}">
+                                                    <Binding Path="IsExtraFieldNeeded"/>
+                                                    <Binding Path="ItemsSource" ElementName="Tables"/>
+                                                    <Binding Path="SelectedItem" ElementName="Tables"/>
+                                                </MultiBinding>
+                                            </CheckBox>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
                                 <DataGridTemplateColumn Width="*">
                                     <DataGridTemplateColumn.Header>
                                         <TextBlock Text="Mezőinformációk" HorizontalAlignment="Left"/>
                                     </DataGridTemplateColumn.Header>
-                                    
+
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <DataGrid ItemsSource="{Binding FieldInfo}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="True" CanUserSortColumns="True">
                                                 <DataGrid.Columns>
-                                                    
+
                                                     <!-- Elérhető mezők -->
-                                                    <DataGridTemplateColumn Header="Mezők" Width="*">
+                                                    <DataGridTemplateColumn Header="Mezők" Width="auto" MinWidth="125">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
-                                                                <TextBlock Text="{Binding FieldName}" VerticalAlignment="Center"/>
+                                                                <TextBox Text="{Binding FieldName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsExtraField,Converter={StaticResource ReadonlyConverter}}"/>
                                                             </DataTemplate>
                                                         </DataGridTemplateColumn.CellTemplate>
                                                     </DataGridTemplateColumn>
 
                                                     <!-- mezőtípus -->
-                                                    <DataGridTemplateColumn Header="Típusa" Width="*">
+                                                    <DataGridTemplateColumn Header="Típusa" Width="auto" MinWidth="120">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
-                                                                <ComboBox ItemsSource="{Binding TypesOfField}" SelectedItem="{Binding TypeOfField, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center"/>
+                                                                <ComboBox ItemsSource="{Binding TypesOfField}" SelectedItem="{Binding TypeOfField, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" IsEnabled="{Binding IsExtraField, Converter={StaticResource ReadonlyConverter}}"/>
                                                             </DataTemplate>
                                                         </DataGridTemplateColumn.CellTemplate>
                                                     </DataGridTemplateColumn>
 
                                                     <!-- elsődlegeskulcs-e -->
-                                                    <DataGridTemplateColumn Header="Elsődlegeskulcs" Width="*">
+                                                    <DataGridTemplateColumn Header="Elsődlegeskulcs" Width="auto" MinWidth="45" >
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
                                                                 <CheckBox IsChecked="{Binding IsPrimaryKey, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -342,7 +366,7 @@
                                                     </DataGridTemplateColumn>
 
                                                     <!-- idegenkulcs-e -->
-                                                    <DataGridTemplateColumn Header="Idegenkulcs" Width="*">
+                                                    <DataGridTemplateColumn Header="Idegenkulcs" Width="auto" MinWidth="100">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
                                                                 <CheckBox x:Name="chBoxFKey" IsChecked="{Binding IsForeignKey, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>

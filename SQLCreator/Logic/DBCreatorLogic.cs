@@ -4,13 +4,16 @@ using SQLCreator.Interfaces;
 using SQLCreator.Model;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization.Formatters;
+using System.Windows.Documents;
+using System.Windows.Media.Media3D;
 
 namespace SQLCreator.Logic
 {
     public class DBCreatorLogic : IDbCreatorLogic
     {
-        //TODO:
-        //2010_május - 12-es feladat
         private IFileReaderLogic _readerLogic;
         public DBCreatorLogic()
         {
@@ -42,6 +45,49 @@ namespace SQLCreator.Logic
             Algorithms.SortTablesOrder(tempTables);
             NewDataBase.TablesInfo = tempTables;
             return NewDataBase;
+        }
+
+        public static void AddExtraField(in ObservableCollection<TableModel> tableModels, TableModel tableModel)
+        {
+            FieldModel fModel = new FieldModel()
+            {
+                FieldName = $"Id",
+                TypeOfField = FieldTypes.SetFieldType("(számláló)"),
+                IsExtraField = true,
+                TypesOfField = new ObservableCollection<string>(FieldTypes.TypeOfFieldsValues),
+            };
+
+            //fieldValue-k beállítása
+            for (int i = 0; i < tableModels[0].FieldInfo[0].FieldValue.Count; i++)
+            {
+                fModel.FieldValue.Add($"{++i}");
+            }
+
+            //referenciák beállítása
+            foreach (var table in tableModels)
+            {
+                if (table == tableModel)
+                    continue;
+                foreach (var field in table.FieldInfo)
+                {
+                    fModel.References.Add($"{table.TableName} ({field.FieldName})");
+                }
+            }
+
+            tableModel.FieldInfo.Insert(0, fModel);
+        }
+
+        public static void RemoveExtraField(TableModel removableTable)
+        {
+            int i = 0;
+            while (i < removableTable.FieldInfo.Count && !removableTable.FieldInfo[i].IsExtraField)
+            {
+                i++;
+            }
+            if (i < removableTable.FieldInfo.Count)
+            {
+                removableTable.FieldInfo.RemoveAt(i);
+            }
         }
 
         /// <summary>
@@ -143,7 +189,7 @@ namespace SQLCreator.Logic
 
         private void SetReference(FieldModel fModel, TableModel tableRef, ObservableCollection<FieldModel> fieldRefs)
         {
-            foreach(var fRefs in fieldRefs)
+            foreach (var fRefs in fieldRefs)
             {
                 SetReference(fModel, tableRef, fRefs, fModel.IsForeignKey ? true : false);
             }

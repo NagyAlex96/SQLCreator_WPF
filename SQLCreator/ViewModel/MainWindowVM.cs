@@ -64,13 +64,13 @@ namespace SQLCreator.ViewModel
         public IRelayCommand ProcessAllFileCommmand { get; private set; }
         private void ProcessAllFile()
         {
-            while(this.AddedFiles.Count>0)
-            {
-                this._dbCreatorLogic.CreateDataBase(AddedFiles[0]);
-                this._fileWriterLogic = new FileWriterLogic(AddedFiles[0]);
-                this._fileWriterLogic.SQLWriter();
-                this._fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, AddedFiles[0]);
-            }
+            //while(this.AddedFiles.Count>0)
+            //{
+            //    this._dbCreatorLogic.CreateDataBase(AddedFiles[0]);
+            //    this._fileWriterLogic = new FileWriterLogic(AddedFiles[0]);
+            //    this._fileWriterLogic.SQLWriter();
+            //    this._fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, AddedFiles[0]);
+            //}
 
             //foreach (var item in AddedFiles)
             //{
