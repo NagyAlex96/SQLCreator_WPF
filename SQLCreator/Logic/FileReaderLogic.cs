@@ -62,18 +62,15 @@ namespace SQLCreator.Logic
             OpenFolderDialog fDialog = new OpenFolderDialog();
             fDialog.Multiselect = true;
             fDialog.ShowDialog();
-            DataBaseModel[] DBModelDatas = new DataBaseModel[fDialog.FolderNames.Length];
-            if (DBModelDatas.Length <= 1 && DBModelDatas.First() is null)
-                return [];
-            int idx = 0;
+            List<DataBaseModel> DBModelDatas = new List<DataBaseModel>();
 
             foreach (var item in GetFilesPathFromFolder(fDialog.FolderNames))
             {
-                if (DBModelDatas[idx++] is null)
+                if (item.Length <= 0)
                     continue;
-                DBModelDatas[idx++] = DBModelConverter(item);
+                DBModelDatas.Add(DBModelConverter(item));
             }
-            return DBModelDatas;
+            return DBModelDatas.ToArray();
         }
 
         /// <summary>
