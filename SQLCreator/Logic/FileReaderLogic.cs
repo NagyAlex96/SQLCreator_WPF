@@ -6,18 +6,15 @@ using System.IO;
 using System.Text;
 using SQLCreator.Model;
 using SQLCreator.Assets;
-using Ude;
 using IOPath = System.IO.Path;
 
 namespace SQLCreator.Logic
 {
     public class FileReaderLogic : IFileReaderLogic
     {
-        //TODO: kódolás a 05. esetén (txt beolvasása)
         //TODO: extra ID oszlop beszúrása, amennyiben szükséges + hiba van, mert valamikor 2x is bekerül a gridview-ba
         //TODO: kód refactorálás
         //TODO: kód átnézése, hogy minden meg lett-e valósítva
-        //TODO: már megszerkeztett fájlok tárolása későbbre (extra mező, hogy meg lehessen különböztetni őket -> beolvasás után hozzárendeljük)
         //TODO: mind feldolgozása (gomb) helyett a szerkesztettek feldolgozása
         //TODO: metódusok/függvények leírásának megírása
 
@@ -31,9 +28,8 @@ namespace SQLCreator.Logic
             string[] destinations = dModelvalue.TxtFileDestination.Split('\n');
             List<string[]> datas = new List<string[]>();
             for (int i = 0; i < destinations.Length; i++)
-            {
-                var encoding = Encoding.GetEncoding(DetectFileEncoding(destinations[i]));
-                datas.Add(File.ReadAllLines(destinations[i], encoding));
+            {         
+                datas.Add(File.ReadAllLines(destinations[i], Encoding.UTF8));
                 datas[i][0] = datas[i][0].ToLower();
             }
             return datas;
@@ -151,18 +147,6 @@ namespace SQLCreator.Logic
             }
 
 
-        }
-
-        private static string DetectFileEncoding(string filePath)
-        {
-            using (FileStream fs = File.OpenRead(filePath))
-            {
-                CharsetDetector cdet = new CharsetDetector();
-                cdet.Feed(fs);
-                cdet.DataEnd();
-
-                return cdet.Charset;
-            }
         }
     }
 }
