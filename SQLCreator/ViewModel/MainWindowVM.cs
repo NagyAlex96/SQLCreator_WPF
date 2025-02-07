@@ -74,6 +74,10 @@ namespace SQLCreator.ViewModel
             {
                 this._fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, AddedFiles[0]);
             }
+            if(this.SelectedItem != null)
+            {
+                this.SelectedItem = null;
+            }
         }
 
         public ObservableCollection<DataBaseModel> AddedFiles { get; set; }
