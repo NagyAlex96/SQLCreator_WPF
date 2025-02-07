@@ -60,10 +60,10 @@ namespace SQLCreator.Logic
             //fieldValue-k beállítása
             for (int i = 0; i < tableModels[0].FieldInfo[0].FieldValue.Count; i++)
             {
-                fModel.FieldValue.Add($"{(i + 1)}");
+                fModel.FieldValue.Add($"{(i+1)}");
             }
 
-            //referenciák beállítása (frissítése)
+            //referenciák beállítása
             foreach (var table in tableModels)
             {
                 if (table == tableModel)
@@ -389,13 +389,10 @@ namespace SQLCreator.Logic
 
         private char GetSeparatorChar(in string line)
         {
-            int i;
-            for (i = 1; i < line.Length; i++)
+            int i = 1;
+            while (i<line.Length && char.IsLetterOrDigit(line[i]) && char.IsLetterOrDigit(line[i-1]))
             {
-                if (line[i] == '_' || line[i - 1] == '_')
-                    continue;
-                if (!char.IsLetterOrDigit(line[i]) || !char.IsLetterOrDigit(line[i - 1]))
-                    break;
+                i++;
             }
 
             return line[i];
