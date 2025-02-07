@@ -11,19 +11,24 @@ namespace SQLCreator.Assets.Converter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            //value értékei
+            //0. index: az első érték egy bool, ami megmondja, hogy szükséges-e egy újabb mező mondjuk az id-nak
+            //1. index az összes tábla
+            //2. index az a tábla, ahova az extra mezőt fogjuk szúrni
+
             if (values[0] is bool isExtraFieldNeeded && values[1] != null && (values[1] as ICollection).Count > 0 && values[2] != null)
             {
                 values[0] = !isExtraFieldNeeded;
                 var tableModelCollection = values[1] as ObservableCollection<TableModel>;
                 var tableModel = values[2] as TableModel;
 
-                if (!isExtraFieldNeeded)
+                if (isExtraFieldNeeded && !tableModel.FieldInfo.Select(x => x.IsExtraField).Any())
                 {
-                    DBCreatorLogic.RemoveExtraField(tableModel);
+                    DBCreatorLogic.AddExtraField(tableModelCollection, tableModel);
                 }
                 else
                 {
-                    DBCreatorLogic.AddExtraField(tableModelCollection, tableModel);
+                    DBCreatorLogic.RemoveExtraField(tableModel);
                 }
             }
 
