@@ -63,10 +63,14 @@ namespace SQLCreator.Logic
             fDialog.Multiselect = true;
             fDialog.ShowDialog();
             DataBaseModel[] DBModelDatas = new DataBaseModel[fDialog.FolderNames.Length];
+            if (DBModelDatas.Length <= 1 && DBModelDatas.First() is null)
+                return [];
             int idx = 0;
 
             foreach (var item in GetFilesPathFromFolder(fDialog.FolderNames))
             {
+                if (DBModelDatas[idx++] is null)
+                    continue;
                 DBModelDatas[idx++] = DBModelConverter(item);
             }
             return DBModelDatas;
