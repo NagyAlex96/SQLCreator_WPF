@@ -26,7 +26,6 @@ namespace SQLCreator.ViewModel
             ProcessAllFileCommmand = new RelayCommand(ProcessAllFile);
         }
 
-
         public IRelayCommand AddFilesCommand { get; private set; }
         private void AddFiles()
         {
@@ -89,11 +88,12 @@ namespace SQLCreator.ViewModel
             get { return _selectedItem; }
             set 
             {
-                if(value != null)
+                int index = this.AddedFiles.IndexOf(value);
+                if (value != null && index > -1 && this.AddedFiles[index].TablesInfo.Count < 1)
                 {
                     this._dbCreatorLogic.CreateDataBase(value);
                 }
-                SetProperty(ref _selectedItem, value); 
+                SetProperty(ref _selectedItem, value);
             }
         }
     }
