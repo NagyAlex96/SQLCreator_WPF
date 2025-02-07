@@ -13,8 +13,8 @@
     <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
+    <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-    <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
   </ItemGroup>
 
 </Project>

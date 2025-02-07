@@ -30,6 +30,7 @@
         <EventTrigger RoutedEvent="MouseLeftButtonDown" SourceName="lbAdded">
             <BeginStoryboard>
                 <Storyboard>
+                    
                     <!-- feldolgozottak megjelenítés  -->
                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="dGridProcessed" Storyboard.TargetProperty="Visibility">
                         <DiscreteObjectKeyFrame KeyTime="0:0:0">
@@ -112,6 +113,10 @@
         <Converter:ExtraFieldConverter x:Key="ExtraFieldConverter"/>
 
         <Style TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style TargetType="DataGrid" x:Name="nonSelectableDGrid">
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
 
