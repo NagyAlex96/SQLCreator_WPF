@@ -1,9 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.VisualBasic.FileIO;
 using SQLCreator.Assets;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace SQLCreator.Model
 {
@@ -71,7 +68,7 @@ namespace SQLCreator.Model
                 SetProperty(ref _referenceTo, value);
             }
         }
-
+        
         private ObservableCollection<string> _references;
         public ObservableCollection<string> References
         {
@@ -80,7 +77,5 @@ namespace SQLCreator.Model
         }
 
         public ObservableCollection<string> FieldValue { get; set; }
-
-        public static Encoding CharSet { get; set; }
     }
 }
