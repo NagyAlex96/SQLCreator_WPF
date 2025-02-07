@@ -47,7 +47,7 @@ namespace SQLCreator.ViewModel
         public IRelayCommand ProcessFileCommand { get; private set; }
         private void ProcessFile()
         {
-            if(this.SelectedItem == null)
+            if (this.SelectedItem == null)
             {
                 MessageBox.Show("No file was selected!", "", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -63,20 +63,17 @@ namespace SQLCreator.ViewModel
         public IRelayCommand ProcessAllFileCommmand { get; private set; }
         private void ProcessAllFile()
         {
-            //while(this.AddedFiles.Count>0)
-            //{
-            //    this._dbCreatorLogic.CreateDataBase(AddedFiles[0]);
-            //    this._fileWriterLogic = new FileWriterLogic(AddedFiles[0]);
-            //    this._fileWriterLogic.SQLWriter();
-            //    this._fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, AddedFiles[0]);
-            //}
-
-            //foreach (var item in AddedFiles)
-            //{
-            //    this._dbCreatorLogic.CreateDataBase(item);
-            //    this._fileWriterLogic = new FileWriterLogic(item);
-            //    this._fileWriterLogic.SQLWriter();
-            //}
+            for (int i = 0; i < AddedFiles.Count; i++)
+            {
+                // ha már szerkesztettük, akkor ne generáljunk újra alapértéket neki(k)
+                this._fileWriterLogic = new FileWriterLogic(this.AddedFiles[i].TablesInfo.Count < 1 ? this._dbCreatorLogic.CreateDataBase(AddedFiles[i]) : this.AddedFiles[i]);
+                this._fileWriterLogic.SQLWriter();
+                AddedFiles[i].IsConverted = true;
+            }
+            while (this.AddedFiles.Count != 0)
+            {
+                this._fileLogic.MoveFileFromTo(AddedFiles, ProcessedFiles, AddedFiles[0]);
+            }
         }
 
         public ObservableCollection<DataBaseModel> AddedFiles { get; set; }
@@ -86,7 +83,7 @@ namespace SQLCreator.ViewModel
         public DataBaseModel SelectedItem
         {
             get { return _selectedItem; }
-            set 
+            set
             {
                 int index = this.AddedFiles.IndexOf(value);
                 if (value != null && index > -1 && this.AddedFiles[index].TablesInfo.Count < 1)
