@@ -389,10 +389,13 @@ namespace SQLCreator.Logic
 
         private char GetSeparatorChar(in string line)
         {
-            int i = 1;
-            while (i<line.Length && char.IsLetterOrDigit(line[i]) && char.IsLetterOrDigit(line[i-1]))
+            int i;
+            for (i = 1; i < line.Length; i++)
             {
-                i++;
+                if (line[i] == '_' || line[i - 1] == '_')
+                    continue;
+                if (!char.IsLetterOrDigit(line[i]) || !char.IsLetterOrDigit(line[i - 1]))
+                    break;
             }
 
             return line[i];
