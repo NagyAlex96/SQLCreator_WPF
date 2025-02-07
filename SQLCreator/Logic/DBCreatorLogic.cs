@@ -60,10 +60,10 @@ namespace SQLCreator.Logic
             //fieldValue-k beállítása
             for (int i = 0; i < tableModels[0].FieldInfo[0].FieldValue.Count; i++)
             {
-                fModel.FieldValue.Add($"{(i+1)}");
+                fModel.FieldValue.Add($"{(i + 1)}");
             }
 
-            //referenciák beállítása
+            //referenciák beállítása (frissítése)
             foreach (var table in tableModels)
             {
                 if (table == tableModel)
