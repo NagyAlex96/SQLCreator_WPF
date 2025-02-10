@@ -3,14 +3,12 @@ using SQLCreator.Interfaces;
 using SQLCreator.Model;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reflection;
 using System.Text;
 
 namespace SQLCreator.Logic
 {
     public class FileWriterLogic : IFileWriterLogic
     {
-        //TODO: szépíteni
         private StreamWriter _sWriter;
         private DataBaseModel _DBModel;
 

@@ -12,10 +12,8 @@ namespace SQLCreator.Logic
 {
     public class FileReaderLogic : IFileReaderLogic
     {
-        //TODO: extra ID oszlop beszúrása, amennyiben szükséges + hiba van, mert valamikor 2x is bekerül a gridview-ba
         //TODO: kód refactorálás
         //TODO: kód átnézése, hogy minden meg lett-e valósítva
-        //TODO: mind feldolgozása (gomb) helyett a szerkesztettek feldolgozása
         //TODO: metódusok/függvények leírásának megírása
 
         public DataBaseModel[] FileOpener()
