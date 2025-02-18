@@ -22,7 +22,7 @@ namespace SQLCreator.Assets.Converter
                 var tableModelCollection = values[1] as ObservableCollection<TableModel>;
                 var tableModel = values[2] as TableModel;
 
-                if (isExtraFieldNeeded && !tableModel.FieldInfo.Select(x => x.IsExtraField).Any())
+                if (isExtraFieldNeeded && !tableModel.FieldInfo.Where(x => x.IsExtraField).Any())
                 {
                     DBCreatorLogic.AddExtraField(tableModelCollection, tableModel);
                 }
