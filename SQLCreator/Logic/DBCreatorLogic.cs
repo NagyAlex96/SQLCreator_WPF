@@ -368,7 +368,7 @@ namespace SQLCreator.Logic
                     fieldModels[i].FieldValue.Add(lineWithData[i].Replace(',', '.'));
                     continue;
                 }
-                fieldModels[i].FieldValue.Add(lineWithData[i]);
+                fieldModels[i].FieldValue.Add(lineWithData[i].Replace("\"","")); //a replace azért kell, mert előfordul, hogy egy érték alapból tartalmaz "-ot és dupla " az sql kód esetén hibát dob(hat)
             }
         }
 
