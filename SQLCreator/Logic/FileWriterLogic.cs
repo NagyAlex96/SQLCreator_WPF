@@ -1,4 +1,5 @@
-﻿using SQLCreator.Assets;
+﻿using iTextSharp.text.pdf.fonts.cmaps;
+using SQLCreator.Assets;
 using SQLCreator.Interfaces;
 using SQLCreator.Model;
 using System.Collections.ObjectModel;
@@ -64,7 +65,7 @@ namespace SQLCreator.Logic
             string pKey = "";
             foreach (FieldModel item in fields)
             {
-                if(item.IsPrimaryKey)
+                if (item.IsPrimaryKey)
                 {
                     pKey += $"\t\tPRIMARY KEY ({item.FieldName})\n";
                     outPut += $"\t{item.FieldName} {item.TypeOfField} NOT NULL,\n";
@@ -73,8 +74,8 @@ namespace SQLCreator.Logic
                 outPut += $"\t{item.FieldName} {item.TypeOfField},\n";
             }
 
-
-            return outPut + pKey;
+            //egy többlet vessző keletkezik, ha nincs a táblának elsődleges kulcsa, ezért kell a remove
+            return pKey==""? outPut.Remove(outPut.Length - 2, 1) : outPut + pKey;
         }
 
         /// <summary>
